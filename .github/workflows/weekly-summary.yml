@@ -23,7 +23,7 @@ jobs:
         working-directory: scripts
 
       - name: Generate weekly + monthly summary
-        run: npx ts-node --esm weekly-summary.ts
+        run: npx ts-node weekly-summary.ts
         working-directory: scripts
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

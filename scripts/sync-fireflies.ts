@@ -1,11 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import { format, getDay } from 'date-fns';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(__dirname, '.env.local') });
 
 const supabase = createClient(
@@ -32,16 +30,25 @@ async function firefliesQuery(query: string, variables: Record<string, unknown>)
 }
 
 async function fetchTodaysTranscripts(dateStr: string) {
+  // Fetch recent transcripts and filter client-side by date
+  // (Fireflies DateTime API type is ms timestamps — simpler to filter locally)
   const data = await firefliesQuery(
-    `query($fromDate: String, $toDate: String) {
-      transcripts(fromDate: $fromDate, toDate: $toDate, limit: 20) {
-        id title date duration organizer_email participants
-        sentences { raw_text speaker_name }
-      }
-    }`,
-    { fromDate: dateStr, toDate: dateStr }
+    `query { transcripts(limit: 20) {
+      id title date duration organizer_email participants
+      sentences { raw_text speaker_name }
+    }}`,
+    {}
   );
-  return (data?.transcripts as Record<string, unknown>[]) ?? [];
+  const all = (data?.transcripts as Record<string, unknown>[]) ?? [];
+
+  // date field is Unix timestamp in milliseconds
+  const dayStart = new Date(dateStr + 'T00:00:00').getTime();
+  const dayEnd = new Date(dateStr + 'T23:59:59').getTime();
+
+  return all.filter(t => {
+    const ts = t.date as number;
+    return ts >= dayStart && ts <= dayEnd;
+  });
 }
 
 function findVibeCheck(transcripts: Record<string, unknown>[]) {
@@ -77,16 +84,15 @@ async function parseRatingAndSummary(transcript: Record<string, unknown>) {
     max_tokens: 400,
     messages: [{
       role: 'user',
-      content: `This is a daily vibe check recording transcript from Henrik. Extract the rating and write a brief summary in Swedish.
+      content: `This is a daily vibe check recording from Henrik. Extract the rating and write a brief summary.
 
 Transcript:
 ${text}
 
-Rating scale: green (grön = bra dag), yellow (gul = okej dag), red (röd = dålig dag).
-Look for words like: grön, gul, röd, grön plupp, gul plupp, röd plupp, bra dag, okej dag, dålig dag.
+Rating scale: green (grön/grön plupp = bra dag), yellow (gul/gul plupp = okej dag), red (röd/röd plupp = dålig dag).
 
-Return JSON only:
-{"rating": "green|yellow|red", "summary": "2-3 meningar på svenska om varför Henrik gav detta betyg"}`,
+Respond with ONLY a raw JSON object (no markdown, no code blocks):
+{"rating": "green", "summary": "2-3 meningar på svenska om varför Henrik gav detta betyg"}`,
     }],
   });
 
@@ -94,10 +100,13 @@ Return JSON only:
   if (content.type !== 'text') throw new Error('Unexpected response type');
 
   try {
-    const parsed = JSON.parse(content.text) as { rating: string; summary: string };
+    // Strip markdown code blocks if present
+    const raw = content.text.replace(/```(?:json)?\n?/g, '').trim();
+    const parsed = JSON.parse(raw) as { rating: string; summary: string };
     const rating = ['green', 'yellow', 'red'].includes(parsed.rating) ? parsed.rating : 'gray';
     return { rating: rating as 'green' | 'yellow' | 'red', summary: parsed.summary };
   } catch {
+    console.error('Claude parse failed, raw:', content.text.substring(0, 200));
     return { rating: 'gray' as const, summary: text.substring(0, 400) };
   }
 }
@@ -111,7 +120,7 @@ async function main() {
     return;
   }
 
-  const dateStr = format(today, 'yyyy-MM-dd');
+  const dateStr = process.env.SYNC_DATE ?? format(today, 'yyyy-MM-dd');
   console.log(`Syncing vibe check for ${dateStr}...`);
 
   const transcripts = await fetchTodaysTranscripts(dateStr);

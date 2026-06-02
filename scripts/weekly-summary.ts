@@ -1,12 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import { format, startOfWeek, endOfWeek, subWeeks, getDaysInMonth } from 'date-fns';
 import { sv } from 'date-fns/locale';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(__dirname, '.env.local') });
 
 const supabase = createClient(

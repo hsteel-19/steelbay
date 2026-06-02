@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "sync": "ts-node --esm sync-fireflies.ts",
-    "weekly": "ts-node --esm weekly-summary.ts"
+    "sync": "ts-node sync-fireflies.ts",
+    "weekly": "ts-node weekly-summary.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.54.0",

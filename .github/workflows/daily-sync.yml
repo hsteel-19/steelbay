@@ -23,7 +23,7 @@ jobs:
         working-directory: scripts
 
       - name: Run Fireflies sync
-        run: npx ts-node --esm sync-fireflies.ts
+        run: npx ts-node sync-fireflies.ts
         working-directory: scripts
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
