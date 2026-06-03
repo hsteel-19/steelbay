@@ -146,7 +146,17 @@ Skriv ca 150-200 ord i löpande text.`,
   console.log(`Monthly summary saved for ${monthName}`);
 }
 
+function validateEnv() {
+  const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'ANTHROPIC_API_KEY'];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length > 0) {
+    console.error('Missing required environment variables:', missing.join(', '));
+    process.exit(1);
+  }
+}
+
 async function main() {
+  validateEnv();
   await generateWeeklySummary();
   await generateMonthlySummaryIfNeeded();
   console.log('Done');

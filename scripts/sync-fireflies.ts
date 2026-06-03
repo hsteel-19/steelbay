@@ -111,7 +111,17 @@ Respond with ONLY a raw JSON object (no markdown, no code blocks):
   }
 }
 
+function validateEnv() {
+  const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'FIREFLIES_API_KEY', 'ANTHROPIC_API_KEY'];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length > 0) {
+    console.error('Missing required environment variables:', missing.join(', '));
+    process.exit(1);
+  }
+}
+
 async function main() {
+  validateEnv();
   const today = new Date();
   const dayOfWeek = getDay(today);
 
