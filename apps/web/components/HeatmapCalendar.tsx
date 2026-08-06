@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { format, startOfYear, eachDayOfInterval, getDay, isWeekend, isFuture, isToday } from 'date-fns';
+import { format, eachDayOfInterval, getDay, isWeekend, isFuture, isToday } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import type { VibeCheck, Rating } from '@/lib/types';
+import { trackingWindow } from '@/lib/config';
 import DayModal from './DayModal';
 
 const RATING_COLORS: Record<Rating, string> = {
@@ -32,8 +33,9 @@ export default function HeatmapCalendar({ vibeChecks, year }: Props) {
 
   const checkMap = new Map(vibeChecks.map(v => [v.date, v]));
 
-  const yearStart = startOfYear(new Date(year, 0, 1));
-  const yearEnd = new Date(year, 11, 31);
+  // Start the grid when tracking actually began, not on 1 January — otherwise
+  // every weekday before the project existed renders as a gray "unrecorded" day.
+  const { start: yearStart, end: yearEnd } = trackingWindow(year);
   const allDays = eachDayOfInterval({ start: yearStart, end: yearEnd });
 
   // Build week columns: each column = one week, rows = Mon(1)-Fri(5)

@@ -27,7 +27,44 @@ export default function MonthlySummaryCard({ summary }: Props) {
           </div>
         ))}
       </div>
-      <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">{summary.summary}</p>
+      <div className="space-y-1">
+        {renderSummary(summary.summary)}
+      </div>
     </div>
   );
+}
+
+// The monthly prompt emits four known headings as bare lines, bullets as "- ".
+// Anything unrecognised falls through as a paragraph, so an off-format response
+// still renders as readable text rather than breaking the card.
+const HEADINGS = ['Månaden i korthet', 'Det som lyfte', 'Det som tyngde', 'Inför nästa månad'];
+
+function renderSummary(text: string) {
+  return text.split('\n').map((raw, i) => {
+    const line = raw.trim();
+    if (!line) return <div key={i} className="h-3" />;
+
+    if (HEADINGS.includes(line)) {
+      return (
+        <p key={i} className="text-xs text-gray-500 uppercase tracking-wider pt-3 first:pt-0">
+          {line}
+        </p>
+      );
+    }
+
+    if (line.startsWith('- ')) {
+      return (
+        <p key={i} className="text-gray-200 text-sm leading-relaxed flex gap-2">
+          <span className="text-gray-600 select-none">—</span>
+          <span>{line.slice(2)}</span>
+        </p>
+      );
+    }
+
+    return (
+      <p key={i} className="text-gray-200 text-sm leading-relaxed">
+        {line}
+      </p>
+    );
+  });
 }

@@ -2,7 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   Swiss structural. See DESIGN.md. Warm paper, warm near-black ink, one
+   ultramarine accent used at most twice per page. Dark mode is a true
+   ink/paper inversion, not the light page dimmed. */
 :root {
+  --paper: #f4f2ed;
+  --ink: #14130f;
+  --muted: #6e6a61;
+  --rule: #d8d4cb;
+  --accent: #1f2ae0;
+
+  /* Vibe Check data colours — deliberately outside the site palette so the
+     site accent can never be confused with a mood rating. */
   --color-green: #16a34a;
   --color-yellow: #ca8a04;
   --color-red: #dc2626;
@@ -10,8 +22,197 @@
   --color-empty: #f3f4f6;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #100f0d;
+    --ink: #edeae3;
+    --muted: #8a857a;
+    --rule: #2a2823;
+    /* #4B54FF measured only 3.66:1 on the dark paper — below AA for the hover
+       text state. #6B72FF is 5.0:1 and still reads as the same ultramarine. */
+    --accent: #6b72ff;
+  }
+}
+
 body {
-  background-color: #0f0f0f;
-  color: #e5e7eb;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-grotesk), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'ss01', 'cv01';
+}
+
+/* ── Structure ─────────────────────────────────────────────────────────────
+   The grid is the design. Rules are structure, never decoration. */
+
+.field {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-inline: 24px;
+}
+@media (min-width: 768px) {
+  .field { padding-inline: 40px; }
+}
+
+/* 3-col meta rail + 9-col content field. Below 1024 the rail becomes a top
+   meta row with its own rule — never a plain stacked list, which is how this
+   direction quietly dies (see DESIGN.md, Known failure mode). */
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+/* Grid items default to min-width:auto, which lets wide children (the comparison
+   table) push the whole page sideways instead of scrolling inside their own
+   container. min-width:0 is what makes .table-wrap actually work. */
+.split > * {
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .split {
+    grid-template-columns: 3fr 9fr;
+  }
+  .split > .rail {
+    padding-right: 32px;
+  }
+  .split > .content {
+    border-left: 1px solid var(--rule);
+    padding-left: 40px;
+  }
+}
+
+.rail-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.meta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.display {
+  font-size: clamp(3.25rem, 11vw, 8.5rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  /* 0.95, not 0.86: at 0.86 the ring of Å in STÅHLE hit the K above it.
+     Swedish diacritics need the headroom. See DESIGN.md. */
+  line-height: 0.95;
+}
+
+.subdisplay {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.measure {
+  max-width: 34rem;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+.rule {
+  border-top: 1px solid var(--rule);
+}
+
+/* One interaction state, colour only. No transforms, no scale. */
+.row-link {
+  display: block;
+  border-top: 1px solid var(--rule);
+  transition: color 150ms, border-color 150ms;
+}
+.row-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Article prose ─────────────────────────────────────────────────────── */
+.prose-sb {
+  max-width: 36rem;
+}
+.prose-sb p {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  margin-bottom: 1.25rem;
+}
+.prose-sb h2 {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+.prose-sb h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.prose-sb ul,
+.prose-sb ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.25rem;
+}
+.prose-sb ul { list-style: none; padding-left: 0; }
+.prose-sb ul > li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.6rem;
+  line-height: 1.6;
+}
+.prose-sb ul > li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+.prose-sb ol { list-style: decimal; }
+.prose-sb ol > li { margin-bottom: 0.75rem; line-height: 1.6; padding-left: 0.25rem; }
+.prose-sb blockquote {
+  margin: 2rem 0;
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--accent);
+  font-size: 1.375rem;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+.prose-sb strong { font-weight: 600; }
+.prose-sb em { font-style: italic; color: var(--muted); }
+.prose-sb a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Tables must scroll inside their own container, never the page. */
+.prose-sb .table-wrap {
+  overflow-x: auto;
+  margin: 2rem 0;
+  border-top: 1px solid var(--rule);
+}
+.prose-sb table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.prose-sb th,
+.prose-sb td {
+  text-align: left;
+  padding: 0.6rem 1rem 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.prose-sb th {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
 }

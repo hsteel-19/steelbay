@@ -108,30 +108,49 @@ async function generateMonthlySummaryIfNeeded() {
   const red = vibeChecks.filter(v => v.rating === 'red').length;
   const gray = vibeChecks.filter(v => v.rating === 'gray').length;
 
+  const withReflection = vibeChecks.filter(v => v.reflection_summary).length;
+  const totalDays = green + yellow + red + gray;
+
   const reflections = vibeChecks
     .filter(v => v.reflection_summary)
     .map(v => `${v.date} (${v.rating}): ${v.reflection_summary}`)
     .join('\n');
 
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 800,
+    // Sonnet, not Haiku: this runs once a month, so the cost is negligible, and
+    // the Swedish prose and pattern-finding are noticeably better.
+    model: 'claude-sonnet-5',
+    max_tokens: 1600,
     messages: [{
       role: 'user',
       content: `Generera en månadsanalys på svenska för Henrik baserat på hans daily vibe checks för ${monthName}.
 
 Statistik: ${green} gröna, ${yellow} gula, ${red} röda, ${gray} gråa dagar (${green + yellow + red + gray} totalt)
+Antal dagar med faktisk reflektion: ${withReflection} av ${totalDays}
 
 Alla reflektioner:
 ${reflections || '(Inga reflektioner registrerade)'}
 
-Analysera:
-1. Vad verkar göra att Henrik mår bra (gröna dagar)?
-2. Vad verkar ligga bakom gula och röda dagar?
-3. Mönster och trender under månaden
-4. En kort uppmuntrande avslutning
+Använd exakt dessa fyra rubriker, var och en på egen rad, med brödtexten på raderna under:
 
-Skriv ca 150-200 ord i löpande text.`,
+Månaden i korthet
+  Hur månaden såg ut överlag.
+Det som lyfte
+  Vad som konkret verkar ligga bakom de gröna dagarna. Referera till faktiska reflektioner.
+Det som tyngde
+  Vad som konkret verkar ligga bakom gula och röda dagar. Om det inte finns underlag, säg det rakt ut.
+Inför nästa månad
+  2-4 konkreta saker Henrik kan göra eller tänka på för att få fler gröna dagar. Ska följa av
+  mönstren ovan, inte vara allmänna livsråd. Skriv varje punkt på egen rad inledd med "- ".
+
+Regler:
+- INGEN markdown. Använd aldrig #, *, ** eller liknande tecken. Rubrikerna skrivs som ren text
+  på egen rad, exakt som de står ovan. Endast punktlistan under sista rubriken inleds med "- ".
+- Bygg ENDAST på reflektionerna ovan. Hitta inte på mönster som inte finns i underlaget.
+- ${withReflection < 8 ? `VIKTIGT: bara ${withReflection} dagar har reflektioner denna månad. Det är för lite för att dra säkra slutsatser. Säg det tydligt i "Månaden i korthet", håll analysen kort, och undvik att presentera svaga observationer som mönster.` : 'Underlaget räcker för att peka ut mönster, men var tydlig med vad som är observation och vad som är gissning.'}
+- Gråa dagar betyder "ingen inspelning gjord", inte "dålig dag". Tolka dem aldrig som humör.
+- Skriv direkt till Henrik, du-tilltal. Ingen peppig avslutningsfras.
+- Totalt ca 250-350 ord.`,
     }],
   });
 

@@ -38,8 +38,11 @@ async function getData() {
 export default async function Dashboard() {
   const { vibeChecks, monthlySummaries, year } = await getData();
 
-  const currentMonth = new Date().getMonth() + 1;
-  const currentSummary = monthlySummaries.find(s => s.month === currentMonth) ?? null;
+  // Summaries are generated for *completed* months, so looking up the current
+  // month always misses — show the most recent one that actually exists.
+  const latestSummary = monthlySummaries.length
+    ? monthlySummaries.reduce((a, b) => (b.month > a.month ? b : a))
+    : null;
 
   const greenCount = vibeChecks.filter(v => v.rating === 'green').length;
   const yellowCount = vibeChecks.filter(v => v.rating === 'yellow').length;
@@ -92,12 +95,12 @@ export default async function Dashboard() {
       </section>
 
       {/* Monthly AI summary */}
-      {currentSummary && (
+      {latestSummary && (
         <section>
           <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-            Månadsanalys — {new Date(year, currentMonth - 1).toLocaleString('sv-SE', { month: 'long' })}
+            Månadsanalys — {new Date(year, latestSummary.month - 1).toLocaleString('sv-SE', { month: 'long' })}
           </h2>
-          <MonthlySummaryCard summary={currentSummary} />
+          <MonthlySummaryCard summary={latestSummary} />
         </section>
       )}
     </main>

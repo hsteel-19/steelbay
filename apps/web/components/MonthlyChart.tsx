@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } fro
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import type { VibeCheck } from '@/lib/types';
+import { firstTrackedMonth } from '@/lib/config';
 
 interface Props {
   vibeChecks: VibeCheck[];
@@ -15,7 +16,14 @@ const MONTH_NAMES = Array.from({ length: 12 }, (_, i) =>
 );
 
 export default function MonthlyChart({ vibeChecks, year }: Props) {
-  const data = MONTH_NAMES.map((name, monthIdx) => {
+  // Only chart months that exist: from when tracking began to the month we're in.
+  // Showing Jan–May would invent five months of "gray" days that predate the project.
+  const now = new Date();
+  const firstMonth = firstTrackedMonth(year);
+  const lastMonth = now.getFullYear() === year ? now.getMonth() : 11;
+
+  const data = MONTH_NAMES.slice(firstMonth, lastMonth + 1).map((name, i) => {
+    const monthIdx = firstMonth + i;
     const monthChecks = vibeChecks.filter(v => {
       const date = new Date(v.date);
       return date.getFullYear() === year && date.getMonth() === monthIdx;
@@ -62,10 +70,13 @@ export default function MonthlyChart({ vibeChecks, year }: Props) {
         <Legend
           wrapperStyle={{ fontSize: 11, color: '#9ca3af', paddingTop: 8 }}
         />
-        <Bar dataKey="Grön" stackId="a" fill="#16a34a" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="Gul" stackId="a" fill="#ca8a04" />
-        <Bar dataKey="Röd" stackId="a" fill="#dc2626" />
-        <Bar dataKey="Grå" stackId="a" fill="#374151" radius={[3, 3, 0, 0]} />
+        {/* Animation off: it adds nothing to a 3-bar dashboard chart, and it makes
+            the chart depend on requestAnimationFrame — which leaves bars stuck at
+            zero height in any background or non-visible tab. */}
+        <Bar dataKey="Grön" stackId="a" fill="#16a34a" radius={[0, 0, 0, 0]} isAnimationActive={false} />
+        <Bar dataKey="Gul" stackId="a" fill="#ca8a04" isAnimationActive={false} />
+        <Bar dataKey="Röd" stackId="a" fill="#dc2626" isAnimationActive={false} />
+        <Bar dataKey="Grå" stackId="a" fill="#374151" radius={[3, 3, 0, 0]} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   );
