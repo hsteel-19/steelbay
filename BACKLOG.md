@@ -136,12 +136,21 @@ domain with no protection at all. See the note under Risks.
              rather than by accident: the root layout holds the document only, `(site)/`
              carries the Swiss shell, and `/vibe-check` and `/unlock` bring their own
              dark shell. A lit front door and a private dark room.
-- [ ] SB-48  `/claude` page has no content yet — **blocked on Henrik.** Which skills are
-             public, and how much of the internals to show. Page ships with an honest
-             empty state rather than invented entries.
-- [ ] SB-49  `/projects` lists only Vibe Check — **blocked on Henrik.** Which other
-             projects, and are there screenshots. Bostadskalkyl and Elementskydd are
-             candidates from the parking lot.
+- [x] SB-48  `/claude` populated — done 2026-08-06. Two skills: `loop-engineering`
+             (English, SKILL.md + 3 references) and `stardust-cowork` (Swedish).
+             Each shows what it does, the shape of the files, and the one idea behind
+             it. `stardust-cowork` is described rather than reproduced — it contains
+             Stardust's internal setup process, so the step-by-step stays unpublished
+             unless Henrik says otherwise.
+- [x] SB-49  `/projects` populated — done 2026-08-06. Pollio added as 01, with the
+             weekend-build story; Vibe Check moved to 02.
+- [ ] SB-50  Pollio screenshots — **needs Henrik.** Save the two PNGs to
+             `apps/web/public/projects/` as `pollio-landing.png` and `pollio-app.png`.
+             The page checks whether each file exists and renders it only if present,
+             so nothing breaks while they are missing. Conversation-attached images
+             cannot be written to the repo from a session.
+- [ ] SB-51  More projects — Bostadskalkyl and Elementskydd are candidates from the
+             parking lot. Not listed until they actually run.
 
 ## EPIC-4 · Vibe Check dashboard v2
 **Status:** Open · **Why:** Henrik has UX and analytics improvements in mind.
