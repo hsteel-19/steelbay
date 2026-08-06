@@ -21,23 +21,29 @@ referenced unambiguously — "do SB-7" should never need clarification.
 **Status:** Next up · **Why:** everything else depends on the site having room for
 more than one product.
 
-- [ ] SB-2  Rename local folder `Henriks vibe check` → `Steelbay.io web`
-- [ ] SB-3  Rename GitHub repo `vibe-check` → `steelbay` (GitHub auto-redirects; Vercel tracks repo ID, so no redeploy needed)
-- [ ] SB-4  Move dashboard from `/` to `/vibe-check` route
-- [ ] SB-5  Shared site shell — root layout, nav/menu, footer
+- [x] SB-2  Rename local folder `Henriks vibe check` → `Steelbay.io web` — done 2026-08-06
+- [x] SB-3  Rename GitHub repo `vibe-check` → `steelbay` — done 2026-08-06
+            (note: `gh repo rename` silently rewrote the remote from SSH to HTTPS; restored)
+- [x] SB-4  Move dashboard from `/` to `/vibe-check` route — done 2026-08-06
+- [x] SB-5  Shared site shell — root layout, nav, footer — done 2026-08-06
 - [ ] SB-6  Split `CLAUDE.md` into site-wide context + vibe-check product context
-- [ ] SB-7  Remove stray untracked `apps/web/next-env.d.ts` (gitignore it — Next regenerates it)
+- [x] SB-7  Gitignore `apps/web/next-env.d.ts` — done 2026-08-06
 
 ## EPIC-2 · Access control
 **Status:** Open · **Why:** the vibe check dashboard is currently live on a public
 domain with no protection at all. See the note under Risks.
 
-- [ ] SB-8   Six-digit code gate on `/vibe-check`
-- [ ] SB-9   Decide storage for the code — env var vs Supabase (env var is simpler, no DB round-trip)
-- [ ] SB-10  Persist unlock in a cookie/session so the code isn't re-entered on every visit
-- [ ] SB-11  Harden Supabase — *later, not blocking SB-8.* Drop the `USING (true)`
+- [x] SB-8   Six-digit code gate on `/vibe-check` — done 2026-08-06. Edge middleware,
+             fails closed if unconfigured. Verified: no cookie → redirect, wrong code →
+             error, right code → cookie, forged cookie → rejected, open redirect → blocked.
+- [x] SB-9   Code stored as `VIBE_CHECK_CODE` env var — done 2026-08-06
+- [x] SB-10  Unlock persists in an httpOnly/Secure/SameSite cookie, 30 days — done 2026-08-06
+- [ ] SB-11  Harden Supabase — *later, not blocking.* Drop the `USING (true)`
              public-read policy on all three tables now that reads are server-side only.
-- [ ] SB-12  Confirm `/vibe-check` is excluded from search engine indexing (`robots.txt` + `noindex`)
+- [x] SB-12  `/vibe-check` and `/unlock` excluded from indexing via `robots.ts` + per-page
+             `robots: { index: false }` — done 2026-08-06
+- [ ] SB-38  Real rate limiting on `/api/unlock`. Currently only a 400ms delay per attempt,
+             which slows but does not stop enumeration of a 6-digit code.
 - [ ] SB-37  Delete dead `apps/web/lib/supabase.ts` and the unused `NEXT_PUBLIC_SUPABASE_*`
              vars — removes the trap that would expose everything the moment someone
              adds a client-side query
