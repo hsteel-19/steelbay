@@ -1,7 +1,8 @@
 import { safeNextPath } from '@/lib/auth';
 
 export const metadata = {
-  title: 'Unlock — Steelbay',
+  // Bare 'Unlock' — the root layout's template appends ' — Steelbay'.
+  title: 'Unlock',
   robots: { index: false, follow: false },
 };
 
@@ -16,9 +17,11 @@ export default function UnlockPage({
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-xs">
-        <h1 className="text-lg font-medium text-white text-center">Private</h1>
+        <h1 className="text-lg font-medium text-white text-center">
+          Henrik&apos;s Private Dashboard
+        </h1>
         <p className="text-gray-500 text-sm text-center mt-2 mb-8">
-          Enter the six-digit code to continue.
+          Enter code to continue.
         </p>
 
         <form action="/api/unlock" method="POST" className="space-y-4">
@@ -27,12 +30,10 @@ export default function UnlockPage({
             type="text"
             name="code"
             inputMode="numeric"
-            pattern="[0-9]{6}"
-            maxLength={6}
             autoComplete="off"
             autoFocus
             required
-            aria-label="Six-digit code"
+            aria-label="Code"
             aria-invalid={failed}
             className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3
                        text-center text-2xl tracking-[0.5em] text-white
