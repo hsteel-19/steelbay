@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
 import Link from 'next/link';
+import Image from 'next/image';
+import { sizedImage } from '@/lib/media';
 
 export const metadata = {
   title: 'Projects',
@@ -60,10 +60,22 @@ const projects: Project[] = [
   },
 ];
 
-/** Only render a screenshot once the file actually exists in /public. */
-function existingShots(shots?: Shot[]): Shot[] {
+interface SizedShot extends Shot {
+  width: number;
+  height: number;
+}
+
+/**
+ * Only render a screenshot once the file exists, with its real dimensions so the
+ * browser reserves space before the image loads — without that the images
+ * collapse to zero height and the page jumps.
+ */
+function existingShots(shots?: Shot[]): SizedShot[] {
   if (!shots) return [];
-  return shots.filter(s => fs.existsSync(path.join(process.cwd(), 'public', s.src)));
+  return shots.flatMap(s => {
+    const sized = sizedImage(s.src);
+    return sized ? [{ ...s, width: sized.width, height: sized.height }] : [];
+  });
 }
 
 export default function ProjectsPage() {
@@ -121,12 +133,13 @@ export default function ProjectsPage() {
                       {visible.length > 0 && (
                         <div className="mt-8 grid gap-3 sm:grid-cols-2">
                           {visible.map(s => (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
+                            <Image
                               key={s.src}
                               src={s.src}
                               alt={s.alt}
-                              loading="lazy"
+                              width={s.width}
+                              height={s.height}
+                              sizes="(min-width: 640px) 17rem, 100vw"
                               className="w-full h-auto border border-[var(--rule)]"
                             />
                           ))}

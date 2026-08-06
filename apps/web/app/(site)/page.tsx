@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAllArticles } from '@/lib/articles';
+import { findImage } from '@/lib/media';
 
 const sections = [
   {
@@ -31,6 +33,7 @@ const sections = [
 
 export default function Home() {
   const articleCount = getAllArticles().length;
+  const hero = findImage('/hero', 'hero');
 
   return (
     <>
@@ -66,16 +69,37 @@ export default function Home() {
               aria-hidden="true"
             />
 
-            <p className="measure mt-10">
-              I build things with AI in the loop — not as a demo, but as the way the work
-              actually gets done. Right now I am learning to write agent loops properly:
-              a goal, a way for the agent to check itself, and a condition that tells it
-              when to stop.
-            </p>
-            <p className="measure mt-5 text-[var(--muted)]">
-              Some of it is useful. Some of it is an experiment that got out of hand.
-              Both live here.
-            </p>
+            {/* Text and image share a sub-grid so the picture sits IN the grid as an
+                element, rather than floating behind the type as decoration. Stacks
+                at mobile, side by side from 1024px. */}
+            <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-12 lg:items-start">
+              <div>
+                <p className="text-[1.0625rem] leading-[1.55]">
+                  Dropping things I do around AI here.
+                </p>
+                <p className="text-[1.0625rem] leading-[1.55] mt-5 text-[var(--muted)]">
+                  Some of it is useful. Some of it is an experiment that got out of hand.
+                </p>
+              </div>
+
+              {hero && (
+                <figure>
+                  <Image
+                    src={hero.src}
+                    alt="Henrik and his daughter, as astronauts, somewhere above Earth"
+                    width={hero.width}
+                    height={hero.height}
+                    priority
+                    sizes="(min-width: 1024px) 44rem, 100vw"
+                    className="w-full h-auto border border-[var(--rule)]"
+                  />
+                  <figcaption className="meta mt-3">
+                    Not a real photo. That is rather the point.
+                  </figcaption>
+                </figure>
+              )}
+            </div>
+
             <div className="pb-20 lg:pb-28" />
           </div>
         </div>
