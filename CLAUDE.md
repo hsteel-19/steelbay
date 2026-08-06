@@ -1,79 +1,100 @@
-# Henrik's Vibe Check
+# steelbay.io
 
-Personal mood tracking system. Henrik records a short daily Fireflies reflection each weekday, rated Green/Yellow/Red. This project automates capturing those recordings, storing them, and displaying them on a dashboard.
+Henrik Ståhle's personal site — a portfolio and home for the things he builds.
+One Next.js app, one repo, one Vercel project. Each "project" on the site is a
+**route, not a separate codebase**.
 
-## What this is
+**Start every session by reading `BACKLOG.md`.** It is the prioritized source of
+truth for what to work on, with stable ticket IDs (`SB-n`).
 
-- **Input**: Henrik speaks into Fireflies every weekday afternoon/evening
-- **Trigger phrase**: "Daily Vibe Check" + rating (grön/gul/röd)
-- **Output**: Dashboard at steelbay.io showing a heatmap calendar, monthly charts, and AI summaries
-
-## Project structure
+## Structure
 
 ```
-apps/web/          — Next.js dashboard (deployed to Vercel → steelbay.io)
-scripts/           — Automation scripts (run via GitHub Actions)
-  sync-fireflies.ts    Daily: fetch new Fireflies transcripts, parse, store in Supabase
-  weekly-summary.ts    Sunday 21:00: generate weekly AI analysis
-supabase/migrations/  — Database schema (SQL migrations)
-transcripts/       — Raw exported transcript files (reference/backup)
-.github/workflows/ — Cron jobs (daily weekday sync, weekly summary)
+apps/web/              — the site (Next.js App Router → Vercel)
+  app/
+    page.tsx           — landing page
+    vibe-check/        — mood dashboard, gated
+    unlock/            — six-digit code entry
+    api/unlock/        — verifies the code, sets the cookie
+  components/          — dashboard UI
+  lib/                 — supabase clients, auth helpers
+  middleware.ts        — gates /vibe-check
+scripts/               — automation, run by GitHub Actions
+  sync-fireflies.ts    — weekdays: fetch transcript, parse, upsert
+  weekly-summary.ts    — Sundays: weekly + monthly AI analysis
+supabase/migrations/   — database schema
+transcripts/           — raw exported transcripts (reference/backup)
+.github/workflows/     — cron jobs
+BACKLOG.md             — epics and tickets
 ```
 
 ## Tech stack
 
-- **Frontend**: Next.js (App Router), TypeScript, Tailwind CSS
-- **Database**: Supabase (PostgreSQL), project "Henriks daily vibe check", region Europe
-- **Hosting**: Vercel (steelbay.io domain via GoDaddy)
-- **Automation**: GitHub Actions cron jobs
-- **AI**: Claude API (claude-sonnet-4-6) for parsing transcripts and generating summaries
-- **Source**: Fireflies API (GraphQL) — authenticated via henrik.stahle@stardustconsulting.se
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind
+- **Database**: Supabase (PostgreSQL), project "Henriks daily vibe check", EU region
+- **Hosting**: Vercel. Canonical domain is `www.steelbay.io` (apex 308-redirects to www).
+  Domain registered at GoDaddy, DNS → `cname.vercel-dns.com`
+- **Automation**: GitHub Actions cron
+- **AI**: Claude API for parsing transcripts and generating summaries
+- **Source**: Fireflies API (GraphQL), account henrik.stahle@stardustconsulting.se
+- **Repo**: `github.com/hsteel-19/steelbay` (renamed from `vibe-check`, Aug 2026)
 
-## Database tables
+## Access control
 
-- `vibe_checks` — one row per weekday: date, rating (green/yellow/red/gray), raw_transcript, reflection_summary, fireflies_id
-- `weekly_summaries` — AI-generated weekly analysis
-- `monthly_summaries` — AI-generated monthly analysis with pattern insights
+`/vibe-check` is private. `middleware.ts` checks for a cookie holding
+`VIBE_CHECK_SECRET`; without it, requests redirect to `/unlock`, where the
+six-digit `VIBE_CHECK_CODE` is entered. The cookie holds the secret, never the
+code, and is httpOnly + Secure + SameSite=lax, 30 days.
 
-## Fireflies integration
+- **Fails closed** — returns 503 rather than serving the dashboard if either env
+  var is missing. A 503 on `/vibe-check` almost always means the running deploy
+  was built before the env vars were saved.
+- Vercel bakes env vars into Edge Middleware **at build time**. After changing
+  them, redeploy with **build cache disabled**, or the middleware keeps the old values.
+- Rotating `VIBE_CHECK_SECRET` logs out every device.
 
-- Search for transcripts containing keyword "vibe check", short duration (< 10 min), solo recordings
-- Rating is spoken as "grön/grön plupp", "gul", "röd" — Claude API extracts it
-- If no transcript found for a weekday → day is marked "gray" (not reported)
+## Vibe Check (the product)
+
+Henrik records a short Fireflies reflection each weekday, rated green/yellow/red.
+
+- **Trigger phrase**: "Daily Vibe Check" + rating (grön/gul/röd)
+- Sync searches Fireflies for short (<10 min) solo recordings containing "vibe check"
+- Rating spoken as "grön/grön plupp", "gul", "röd" — Claude extracts it
+- A weekday with no transcript is stored explicitly as `gray`, not left absent
+- Weekends are not tracked, by design
+
+**Tables**: `vibe_checks` (date, rating, raw_transcript, reflection_summary,
+fireflies_id), `weekly_summaries`, `monthly_summaries`.
+
+**Dashboard**: heatmap calendar (weekdays only), day modal with the full
+reflection, monthly chart, monthly AI summary, and seasonal trends that get more
+useful as history accumulates.
 
 ## Automation schedule
 
-- **Weekdays 22:00 CET**: `sync-fireflies.ts` — fetch today's transcript, parse, upsert to Supabase
-- **Sunday 21:00 CET**: `weekly-summary.ts` — generate weekly + trigger monthly summary if month ended
+- **Weekdays 22:00 CET** — `sync-fireflies.ts`, plus a 7-day catch-up every run
+- **Sunday 21:00 CET** — `weekly-summary.ts`, triggers monthly if the month ended
+- Each daily run commits `.github/heartbeat/last-run.txt`. **This is load-bearing:**
+  GitHub auto-disables scheduled workflows after 60 days without repo activity, and
+  it already happened once (Aug 2026, silently, for two days). Do not remove it.
 
-## Environment variables needed
+## Environment variables
 
 ```
-ANTHROPIC_API_KEY        — Claude API for parsing and summaries
-SUPABASE_URL             — Supabase project URL
-SUPABASE_SERVICE_KEY     — Supabase service role key (for server-side writes)
-NEXT_PUBLIC_SUPABASE_URL — Same URL, exposed to frontend
-NEXT_PUBLIC_SUPABASE_ANON_KEY — Supabase anon key for frontend reads
-FIREFLIES_API_KEY        — Fireflies GraphQL API key
+ANTHROPIC_API_KEY      SUPABASE_URL           SUPABASE_SERVICE_KEY
+FIREFLIES_API_KEY      VIBE_CHECK_CODE        VIBE_CHECK_SECRET
 ```
 
-## Dashboard features
+`NEXT_PUBLIC_SUPABASE_*` still exist in Vercel but are **unused** — all reads are
+server-side via the service key. Removing them is SB-37.
 
-1. **Heatmap calendar** — GitHub-style grid, weekdays only, colored green/yellow/red/gray
-2. **Day modal** — click any day to see the full reflection and summary
-3. **Monthly bar/pie chart** — count of green/yellow/red/gray per month
-4. **Monthly AI summary** — what drives good vs bad days
-5. **Seasonal trends** — year-over-year pattern analysis (grows over time)
+## Conventions and key decisions
 
-## Domain setup (steelbay.io)
-
-- Registered at GoDaddy
-- DNS pointed to Vercel (CNAME: cname.vercel-dns.com)
-- steelbay.io = this dashboard (future: subpaths for other private projects)
-
-## Key decisions
-
-- No auth needed — this is a private personal dashboard, deploy with no public access or just obscurity
-- GitHub Actions over Vercel Cron — free tier, more flexible scheduling, logs in GitHub
-- Weekdays only in heatmap — weekends are not tracked (by design)
-- Gray days are explicit — a missing entry for a weekday is stored as gray, not just absent
+- **All Supabase reads happen server-side.** Do not add a client-side Supabase
+  query without first dropping the `USING (true)` public-read RLS policy (SB-11) —
+  otherwise the anon key ships to the browser and every reflection becomes public.
+- GitHub Actions over Vercel Cron — free tier, flexible scheduling, logs in GitHub.
+- Gray days are explicit, not absent.
+- Update `BACKLOG.md` when a ticket ships: tick the box, add `done YYYY-MM-DD · <sha>`.
+- **Verify before claiming done.** The gate was confirmed with real HTTP checks
+  against production, not by assuming a green deploy meant working.

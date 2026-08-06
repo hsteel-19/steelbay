@@ -2,6 +2,8 @@
 
 Last updated: 2026-08-06
 
+**Next up:** SB-13 (design direction) → then SB-14 as the first real agent loop.
+
 Working backlog for everything being built on steelbay.io. Epics are ordered by
 priority, top = most important. Tickets carry stable IDs (`SB-n`) so they can be
 referenced unambiguously — "do SB-7" should never need clarification.
@@ -26,7 +28,8 @@ more than one product.
             (note: `gh repo rename` silently rewrote the remote from SSH to HTTPS; restored)
 - [x] SB-4  Move dashboard from `/` to `/vibe-check` route — done 2026-08-06
 - [x] SB-5  Shared site shell — root layout, nav, footer — done 2026-08-06
-- [ ] SB-6  Split `CLAUDE.md` into site-wide context + vibe-check product context
+- [x] SB-6  Rewrite `CLAUDE.md` for the steelbay.io site (vibe check kept as a
+            product section within it) — done 2026-08-06
 - [x] SB-7  Gitignore `apps/web/next-env.d.ts` — done 2026-08-06
 
 ## EPIC-2 · Access control
@@ -51,8 +54,30 @@ domain with no protection at all. See the note under Risks.
 ## EPIC-3 · Landing page
 **Status:** Open · **Why:** steelbay.io becomes the portfolio front door.
 
-- [ ] SB-13  Landing page design direction — decide the look/feel before building
-- [ ] SB-14  Build `/` landing page
+- [ ] SB-13  Landing page design direction — decide the look/feel before building.
+             **Blocks SB-14** — the loop needs a rubric, and the rubric comes from this.
+- [ ] SB-14  Build `/` landing page — *this is the first proper agent loop.*
+             Draft instruction below; fill the rubric from SB-13 before running.
+
+  ```
+  GOAL    Build the steelbay.io landing page until it scores >= 8/10 on every
+          rubric axis at both viewports.
+  SCOPE   In:  apps/web/app/page.tsx, apps/web/components/, apps/web/app/globals.css
+          Out: /vibe-check, middleware/auth, Supabase, scripts/, workflows
+  VERIFY  Run the dev server, screenshot at 1280px and 375px, score each pass on:
+          — purpose clear within 5 seconds
+          — visual hierarchy
+          — typography
+          — whitespace and rhythm
+          — mobile legibility
+          — dark mode consistency
+          (replace with the real rubric once SB-13 is decided)
+  STOP    Done when: every axis >= 8 at both viewports
+          Cap:       6 passes, then stop and present the best version
+          Escalate:  if the design direction itself feels wrong, stop and ask —
+                     do not iterate on a bad premise
+  MEMORY  Append each pass's scores and what changed to this ticket
+  ```
 - [ ] SB-15  Project cards/index — Vibe Check, Articles, future projects
 - [ ] SB-16  Short "about" / intro section
 - [ ] SB-17  Responsive + dark mode pass
