@@ -35,12 +35,12 @@ domain with no protection at all. See the note under Risks.
 - [ ] SB-8   Six-digit code gate on `/vibe-check`
 - [ ] SB-9   Decide storage for the code — env var vs Supabase (env var is simpler, no DB round-trip)
 - [ ] SB-10  Persist unlock in a cookie/session so the code isn't re-entered on every visit
-- [ ] SB-11  **Drop the public-read RLS policy and move all reads server-side.** Must ship
-             with SB-8 or the gate is decorative — see Risks. Read with the service key in a
-             server component / route handler that runs only after the gate passes, and stop
-             shipping `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the browser.
+- [ ] SB-11  Harden Supabase — *later, not blocking SB-8.* Drop the `USING (true)`
+             public-read policy on all three tables now that reads are server-side only.
 - [ ] SB-12  Confirm `/vibe-check` is excluded from search engine indexing (`robots.txt` + `noindex`)
-- [ ] SB-36  Rotate the Supabase anon key after SB-11 — the current one has been public
+- [ ] SB-37  Delete dead `apps/web/lib/supabase.ts` and the unused `NEXT_PUBLIC_SUPABASE_*`
+             vars — removes the trap that would expose everything the moment someone
+             adds a client-side query
 
 ## EPIC-3 · Landing page
 **Status:** Open · **Why:** steelbay.io becomes the portfolio front door.
@@ -96,15 +96,19 @@ domain with no protection at all. See the note under Risks.
   documents that as an accepted decision. Henrik has now said this data is too private,
   which makes EPIC-2 the first thing to ship after the restructure. If the domain has
   ever been indexed or shared, treat the past entries as already exposed.
-- **CONFIRMED: a six-digit gate alone would be decorative.** Checked
-  `supabase/migrations/001_init.sql` — RLS *is* enabled, but the policy is
-  `FOR SELECT USING (true)` on all three tables, i.e. public read for anyone holding
-  the anon key. That key ships to the browser as `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
-  `apps/web/lib/supabase.ts` uses it client-side. So anyone who opens devtools on
-  steelbay.io can read every row directly from the Supabase API — including
-  `raw_transcript`, the full text of every daily reflection. A UI gate would not
-  change that by even a little. SB-11 is therefore not optional polish; it is the
-  actual fix, and SB-8 without SB-11 is false comfort.
+- **A server-side six-digit gate IS effective. (Corrected 2026-08-06.)** An earlier
+  version of this file claimed the gate would be decorative because the anon key
+  ships to the browser. That was wrong — traced the real data flow: `lib/supabase.ts`
+  (the anon client) is imported by nothing, all reads happen server-side in
+  `app/page.tsx` via the service key, and the client components receive data as
+  props. Next never inlines `NEXT_PUBLIC_SUPABASE_ANON_KEY` into the bundle because
+  nothing references it client-side. The data is not currently exposed.
+- **Latent risk, not urgent:** the RLS policy is still `FOR SELECT USING (true)` on
+  all three tables, and `lib/supabase.ts` is dead code holding an anon client. The
+  day anyone adds a client-side Supabase query, the key ships and every row —
+  including `raw_transcript` — becomes publicly readable in one step. Cheap to
+  defuse (SB-11, SB-37): delete the dead file, drop the public-read policy, remove
+  the unused `NEXT_PUBLIC_*` vars.
 - Article format decision (SB-23) blocks all of EPIC-5.
 - Landing page design direction (SB-13) blocks the rest of EPIC-3.
 
