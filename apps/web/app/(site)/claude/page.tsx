@@ -20,7 +20,7 @@ const notes: Record<
     headline: 'Set up Claude Cowork the right way.',
     body: 'A step-by-step walkthrough of how I set mine up, built from my own experience and a lot of ideas taken from people on the internet. It takes about twenty minutes. What you get back is a folder Claude reads at the start of every session, so you stop spending the first ten messages explaining who you are and what good looks like.',
     steps: [
-      'Download the zip file and open it.',
+      'Download the zip file. Keep it zipped, all five files go up together.',
       'Open Claude. Go to Settings → Customize → Skills → Add → Upload a skill.',
       'Create a folder on your computer called "Claude Cowork".',
       'Start a Claude Cowork session, point it to the "Claude Cowork" folder and prompt "help me set up Claude Cowork". The skill takes care of the rest.',
