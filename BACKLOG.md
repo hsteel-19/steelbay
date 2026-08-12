@@ -168,6 +168,17 @@ domain with no protection at all. See the note under Risks.
              punctuation rules. Swept every file in the skill and the `/claude` page
              for the pattern and fixed five real three-item lists. The only remaining
              hits are the deliberate "Bad:" examples inside the rule itself.
+- [x] SB-54  Hero image shipped — done 2026-08-12 · b9d1810. Closes the slot built on
+             2026-08-06. `hero.png`, a 2.1 MB PNG served as optimised WebP by
+             next/image. The repo carries the full PNG; worth watching if more land.
+- [x] SB-55  Home page hero restructured — done 2026-08-12 · 654fb3e. Henrik's call,
+             from a mockup: the picture leads, accent plane at the same width beneath
+             it, then the single line. Removed the HENRIK STÅHLE display wordmark, the
+             "some of it is useful" line, the three rail items under `00 — Index`, and
+             a caption Claude had invented. Rounded corners on the image are a
+             deliberate exception to the hard-edged direction, not a new rule.
+             **Note:** the name survives as an `sr-only` h1. Do not delete it without
+             putting a heading somewhere else — the page would have none at all.
 
 ## EPIC-4 · Vibe Check dashboard v2
 **Status:** Open · **Why:** Henrik has UX and analytics improvements in mind.
