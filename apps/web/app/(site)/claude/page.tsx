@@ -6,16 +6,23 @@ export const metadata = {
 };
 
 // The one idea behind each skill, written for a reader deciding whether to bother.
-const notes: Record<string, { headline: string; body: string; idea: string }> = {
+// `before` is for the steps a skill cannot do for you, because they happen before
+// the skill is installed.
+const notes: Record<
+  string,
+  { headline: string; body: string; idea: string; before?: string }
+> = {
   'loop-engineering': {
     headline: 'Decide whether a task should be an agent loop at all, then design one that stops.',
     body: 'Runs a decision check before designing anything — can fresh feedback change the next step, can "done" be defined objectively, does the agent have a real way to verify. If any of the three fails it tells you to write a single sharp prompt instead. If they pass, it builds the loop around observe → choose → act → verify → record, with named end states so a hit budget cap is never dressed up as success.',
     idea: 'A loop is only as good as its stop condition. The cheapest way for an agent to raise its own score is to move the target — so the goal has to live somewhere that changing it is visible.',
   },
   'cowork-setup': {
-    headline: 'Get Claude Cowork set up properly, one step at a time.',
-    body: 'Folder structure, the three ABOUT ME files, global instructions, connectors, and how to lay out a real project so you stop re-explaining the background every session. It asks which of four situations you are in before answering, so you get the part you need rather than the whole manual.',
-    idea: 'Setup guides fail because they answer a question nobody asked yet. Ask which situation someone is in first and most of the guide becomes irrelevant — which is the point.',
+    headline: 'Set up Claude Cowork the right way.',
+    body: 'A step-by-step walkthrough of how I set mine up, built from my own experience and a lot of ideas taken from people on the internet. It takes about twenty minutes. What you get back is a folder Claude reads at the start of every session, so you stop spending the first ten messages explaining who you are and what good looks like.',
+    idea: 'The three files it builds are read at the start of every session, so length is a cost you pay every time, not once. That is why it interviews you instead of letting you write them. Nobody edits their own about-me down.',
+    before:
+      'Two things it cannot do for you, because they happen first: make a folder called Claude Cowork, and select it in the Cowork app. Then hand it this skill.',
   },
 };
 
@@ -37,15 +44,33 @@ export default function ClaudePage() {
           <h1 className="display">CLAUDE</h1>
 
           <p className="measure mt-10">
-            Skills I have written for Claude, free to download. A skill is just a folder
-            with a <code className="font-mono text-[0.9em]">SKILL.md</code> in it —
-            instructions Claude loads when the task calls for them.
+            Skills I have written for Claude, free to download. A skill is one{' '}
+            <code className="font-mono text-[0.9em]">SKILL.md</code> file, sometimes with
+            a few reference files beside it — instructions Claude loads when the task
+            calls for them, and ignores when it does not.
           </p>
           <p className="measure mt-5 text-[var(--muted)]">
-            To install one: unzip it into your skills folder, restart Claude, and it
-            shows up. The interesting part was never the syntax — it is deciding what
-            the instruction should actually say.
+            The interesting part was never the syntax. It is deciding what the
+            instruction should actually say.
           </p>
+
+          {/* The install path, because a skill nobody can install is just a file. */}
+          <div className="mt-12 pl-5 border-l border-[var(--rule)]">
+            <p className="rail-label">Installing one</p>
+            <ol className="mt-4 space-y-2.5 max-w-[32rem]">
+              {[
+                'Download the zip below. Leave it zipped.',
+                'In Claude, open Settings → Customize → Skills → Add → Upload a skill.',
+                'Upload the zip and turn the skill on.',
+                'Start a new Cowork session and describe your task. Claude loads the skill when it fits — you do not have to call it by name.',
+              ].map((step, i) => (
+                <li key={i} className="flex gap-4 text-[0.9375rem] leading-relaxed">
+                  <span className="meta shrink-0 pt-0.5">{String(i + 1).padStart(2, '0')}</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
           <div className="mt-16">
             {skills.map((skill, i) => {
@@ -71,6 +96,11 @@ export default function ClaudePage() {
                           <p className="mt-6 pl-5 border-l-2 border-[var(--accent)] text-[1.0625rem] leading-snug max-w-[32rem]">
                             {note.idea}
                           </p>
+                          {note.before && (
+                            <p className="mt-6 meta max-w-[34rem] leading-relaxed">
+                              {note.before}
+                            </p>
+                          )}
                         </>
                       )}
 

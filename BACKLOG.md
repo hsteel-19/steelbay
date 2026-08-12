@@ -151,6 +151,23 @@ domain with no protection at all. See the note under Risks.
              cannot be written to the repo from a session.
 - [ ] SB-51  More projects — Bostadskalkyl and Elementskydd are candidates from the
              parking lot. Not listed until they actually run.
+- [x] SB-52  `cowork-setup` rewritten to build the setup, not describe it — done
+             2026-08-11. Four reference files added: `anti-ai-writing-style.md`
+             (shipped verbatim, bilingual, de-branded), the 12-question `about-me`
+             interview, a new 9-question `my-company` interview reverse-engineered
+             from Henrik's own file, and the paste-ready global instructions.
+             `TEMPLATES/` dropped everywhere — he never used it. Decided against a
+             companion article: the skill is the product, and the only prose that
+             cannot live inside it is the bootstrap, which is now a four-step install
+             block in the `/claude` intro. Install path confirmed by Henrik as
+             Settings → Customize → Skills → Add → Upload a skill.
+- [x] SB-53  No-serial-comma rule added to `anti-ai-writing-style.md` — done
+             2026-08-11. Henrik's rule: "apple, pear and mango", never
+             "apple, pear, and mango". Wrong in Swedish, an Americanism in English,
+             and a punctuation tell either way. Sits next to the dash ban as the two
+             punctuation rules. Swept every file in the skill and the `/claude` page
+             for the pattern and fixed five real three-item lists. The only remaining
+             hits are the deliberate "Bad:" examples inside the rule itself.
 
 ## EPIC-4 · Vibe Check dashboard v2
 **Status:** Open · **Why:** Henrik has UX and analytics improvements in mind.
