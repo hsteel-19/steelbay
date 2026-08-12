@@ -47,11 +47,6 @@ export default function Home() {
                 not a stacked list. See DESIGN.md, Known failure mode. */}
             <div className="flex lg:block gap-x-6 gap-y-1 flex-wrap pb-6 lg:pb-0 border-b lg:border-b-0 border-[var(--rule)] mb-8 lg:mb-0">
               <span className="rail-label">00 — Index</span>
-              <span className="meta lg:block lg:mt-6">Stockholm</span>
-              <span className="meta lg:block lg:mt-1">Stardust Consulting</span>
-              <span className="meta lg:block lg:mt-6 lg:max-w-[14rem]">
-                Bygger med agenter, inte om dem
-              </span>
             </div>
           </div>
 
@@ -77,9 +72,6 @@ export default function Home() {
                 <p className="text-[1.0625rem] leading-[1.55]">
                   Dropping things I do around AI here.
                 </p>
-                <p className="text-[1.0625rem] leading-[1.55] mt-5 text-[var(--muted)]">
-                  Some of it is useful. Some of it is an experiment that got out of hand.
-                </p>
               </div>
 
               {hero && (
@@ -91,7 +83,7 @@ export default function Home() {
                     height={hero.height}
                     priority
                     sizes="(min-width: 1024px) 44rem, 100vw"
-                    className="w-full h-auto border border-[var(--rule)]"
+                    className="w-full h-auto rounded-xl border border-[var(--rule)]"
                   />
                   <figcaption className="meta mt-3">
                     Not a real photo. That is rather the point.
