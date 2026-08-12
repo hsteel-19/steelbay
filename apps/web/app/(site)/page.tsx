@@ -51,46 +51,35 @@ export default function Home() {
           </div>
 
           <div className="content">
-            <h1 className="display">
-              HENRIK
-              <br />
-              STÅHLE
-            </h1>
+            {/* The name still has to be the page's h1 for search and screen readers.
+                It is just not the thing you look at — the picture is. */}
+            <h1 className="sr-only">Henrik Ståhle</h1>
+
+            {/* Image, accent plane and line share one width so they read as a single
+                stacked block rather than three things that happen to be near each
+                other. Change HERO_W and all three move together. */}
+            {hero && (
+              <Image
+                src={hero.src}
+                alt="Henrik Ståhle and a baby, both in spacesuits, floating above Earth. Generated, not photographed."
+                width={hero.width}
+                height={hero.height}
+                priority
+                sizes="(min-width: 640px) 25rem, 100vw"
+                className="w-full max-w-[25rem] h-auto rounded-xl border border-[var(--rule)]"
+              />
+            )}
 
             {/* The single accent plane. DESIGN.md: applied as a plane, not decoration. */}
             <div
-              className="mt-10 h-2 w-full max-w-[22rem]"
+              className="mt-5 h-2 w-full max-w-[25rem]"
               style={{ backgroundColor: 'var(--accent)' }}
               aria-hidden="true"
             />
 
-            {/* Text and image share a sub-grid so the picture sits IN the grid as an
-                element, rather than floating behind the type as decoration. Stacks
-                at mobile, side by side from 1024px. */}
-            <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-12 lg:items-start">
-              <div>
-                <p className="text-[1.0625rem] leading-[1.55]">
-                  Dropping things I do around AI here.
-                </p>
-              </div>
-
-              {hero && (
-                <figure>
-                  <Image
-                    src={hero.src}
-                    alt="Henrik and his daughter, as astronauts, somewhere above Earth"
-                    width={hero.width}
-                    height={hero.height}
-                    priority
-                    sizes="(min-width: 1024px) 44rem, 100vw"
-                    className="w-full h-auto rounded-xl border border-[var(--rule)]"
-                  />
-                  <figcaption className="meta mt-3">
-                    Not a real photo. That is rather the point.
-                  </figcaption>
-                </figure>
-              )}
-            </div>
+            <p className="mt-9 text-[1.0625rem] leading-[1.55]">
+              Dropping things I do around AI here.
+            </p>
 
             <div className="pb-20 lg:pb-28" />
           </div>
