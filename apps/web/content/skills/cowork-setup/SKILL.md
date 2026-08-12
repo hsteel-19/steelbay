@@ -1,15 +1,18 @@
 ---
 name: cowork-setup
-description: "Helps someone set up Claude Cowork and understand how it is actually used day to day. Guides through folder structure, ABOUT ME files, global instructions, connectors and per-project setup. Use when someone is setting Cowork up from scratch, is stuck on a step, or wants to see how a real project is structured."
+description: "Sets up Claude Cowork properly and builds the three ABOUT ME files by interview instead of leaving the user to write them. Covers folder structure, about-me.md, my-company.md, anti-ai-writing-style.md, global instructions, connectors and per-project setup. Use when someone is setting Cowork up from scratch, is stuck on a step or wants to see how a real project is structured."
 ---
 
 # Cowork setup
 
-You are helping someone get Claude Cowork working, or get unstuck, or understand
-how it is used on real work. Adapt to which of those it is — do not deliver the
-whole guide to someone who asked one question.
+You are helping someone get Claude Cowork working, get unstuck or understand how
+it is used on real work. Adapt to which of those it is. Do not deliver the whole
+guide to someone who asked one question.
 
-## Before you answer — find out where they are
+This skill does not only explain the setup. In Mode 1 you build it: create the
+folders, interview them and write the files.
+
+## Before you answer, find out where they are
 
 Ask first. Use AskUserQuestion with these options:
 
@@ -18,98 +21,113 @@ Ask first. Use AskUserQuestion with these options:
 - "Show me how a real project is structured"
 - "I have one specific question"
 
-Then answer in the matching mode below. Most of this document will be irrelevant
-to any given person, and that is the point.
+Then work in the matching mode below. Most of this document will be irrelevant to
+any given person, and that is the point.
 
 ---
 
 ## MODE 1 — Setup from scratch
 
-One step at a time. Wait for confirmation before moving on. Do not paste all five
-steps at once.
+Five steps. One at a time, wait for confirmation before moving on. Do not paste
+all five at once.
+
+Tell them up front what this will cost them: about twenty minutes, most of it
+answering questions about themselves. The output is a working folder, not notes.
 
 ### Step 1: The folder
 
-Create a folder on the computer. Name it anything — `Claude Cowork` works.
+They create this one by hand, before you can help. You cannot create the root
+folder, because nothing is selected yet.
 
-Inside it, create three subfolders:
+Ask them to make a folder called `projects` somewhere sensible, drag it into the
+Finder or Explorer sidebar so it is one click away, then create `Claude Cowork`
+inside it.
+
+Then select `Claude Cowork` in the Cowork app.
+
+Once it is selected, you create the two subfolders yourself:
 
 ```
-ABOUT ME/     — who you are; read at the start of every session
-OUTPUTS/      — where work gets saved, one subfolder per project
-TEMPLATES/    — reusable things worth keeping
+Claude Cowork/
+  ABOUT ME/     — who they are, read at the start of every session
+  OUTPUTS/      — where work gets saved, one subfolder per project
 ```
 
-Then select this folder in the Cowork app.
+Two folders. Not three. A templates folder sounds useful and then never gets
+opened, so leave it out. If they later want reusable material, it lives in the
+project folder that produced it.
 
-### Step 2: The ABOUT ME files
+### Step 2: anti-ai-writing-style.md
 
-These live in `ABOUT ME/` and Claude reads them automatically each session. Three
-files, each doing a different job:
+Start with this one, because it costs them nothing. Copy
+`references/anti-ai-writing-style.md` into `ABOUT ME/` as it is.
 
-**`about-me.md`** — who you are and how you work. Build it by interview rather
-than by writing it cold: ask the person 10–12 questions (role, what they own,
-who they work with, what a good week looks like, what they keep having to
-re-explain to people, what they want Claude to never do), then compile the
-answers into the file yourself.
+It is an opinionated file: a ban on em dashes, a list of words that mark text as
+generated, rules on paragraph length and rhythm. It is bilingual, Swedish and
+English, and it applies whichever language they write in.
 
-**`my-company.md`** — the organisation. What it does, who the customers are, the
-vocabulary and acronyms an outsider would not know, current priorities. This is
-the file that stops Claude asking what things mean.
+Tell them it is someone else's taste and they should edit it. Then let them read
+it later rather than reviewing it line by line now.
 
-**`writing-style.md`** — how output should read. Most useful as a list of things
-to avoid: words the person hates, structures that feel generated, the register
-they actually write in. Negative instructions work better than positive ones here.
+### Step 3: about-me.md
 
-**Keep all three under roughly 6,000 tokens combined.** They are read every
+Follow `references/about-me-interview.md`. Twelve questions, AskUserQuestion,
+one at a time.
+
+The follow-ups are where the value is. A file compiled from twelve unchallenged
+answers is worse than one built from six answers you pushed on. Push when an
+answer is vague.
+
+Compile and save to `ABOUT ME/about-me.md`. Under 2,000 tokens.
+
+### Step 4: my-company.md
+
+Follow `references/my-company-interview.md`. Nine questions.
+
+The vocabulary question is the one that pays off. Internal acronyms, project
+codenames, tool nicknames. Get at least four.
+
+Compile and save to `ABOUT ME/my-company.md`. Under 2,000 tokens.
+
+**Keep all three files under roughly 6,000 tokens combined.** They are read every
 session, so length is a running cost, not a one-off. If one grows too long, trim
 it by asking: *"This is my about-me file and I need to save tokens. Ask me
 questions about what to cut until it is tight."*
 
-### Step 3: Global instructions
+### Step 5: Global instructions
 
-Global instructions tell Claude how the folder works. Without them Claude does
-not know where to read from or where to save.
+Without this, none of the files you just built get read.
 
-**Settings → Cowork → Edit Global Instructions.** It needs to say, in plain
-language:
+Follow `references/global-instructions.md`. Give them the paste block whole, tell
+them where it goes, and run the verification session at the end.
 
-- Read everything in `ABOUT ME/` at the start of a session
-- Save work into `OUTPUTS/<project>/`, never loose in the root
-- When a project folder has a `CLAUDE.md`, read it before doing anything
-- Reusable output goes in `TEMPLATES/`
+Do not declare setup finished until that test session comes back with a specific
+answer about them.
 
-### Step 4: Connectors
+### After setup: connectors
 
-Connectors give Claude access to real tools. **Settings → Connectors.** Connect
-only what is actually needed — each one is a place data can flow, and an unused
-connector is just exposure.
+Not part of the five steps, and not urgent. Bring it up once the folder works.
 
-Common ones: mail, calendar, file storage, and whatever the team's chat tool is.
-Some require an admin to approve them for the whole organisation, so check that
+Connectors give Claude access to real tools, under **Settings → Connectors**.
+Connect only what is actually needed. Each one is a place data can flow, and an
+unused connector is just exposure.
+
+Some need an admin to approve them for the whole organisation, so check that
 before promising anyone it will work.
-
-### Step 5: Test it
-
-Start a fresh session and write:
-
-> Read my ABOUT ME files and tell me briefly what you learned about me.
-
-If the answer is specific and correct, setup is done. If it is generic, the
-global instructions are not being applied — go back to step 3.
 
 ---
 
 ## MODE 2 — Stuck on a step
 
-Ask which step. Give a targeted answer to that step only.
+Ask which step. Answer that step only.
 
 | Symptom | Usually |
 |---|---|
 | Claude ignores ABOUT ME | Global instructions missing, or the folder is not selected in Cowork |
-| Claude saves in the wrong place | `OUTPUTS/` does not exist, or global instructions never mention it |
+| Claude saves in the wrong place | `OUTPUTS/` does not exist, or the global instructions never mention it |
 | Claude has no project context | The project folder has no `CLAUDE.md`, or it was not selected this session |
-| Answers feel generic | ABOUT ME is too long and is being skimmed — trim it |
+| Answers feel generic | ABOUT ME is too long and is being skimmed, so trim it |
+| Writing still sounds generated | `anti-ai-writing-style.md` is in the folder but not named in the global instructions list |
 | A connector will not connect | Often needs organisation-level approval, not a personal fix |
 
 ---
@@ -139,7 +157,7 @@ Numbered subfolders because they are phases, and the order is information.
 - What the project is, and what has to be delivered
 - Who the client or stakeholder is, and their situation
 - The people involved and their roles
-- What "done" means *for this specific project* — the part most people skip
+- What "done" means *for this specific project*, the part most people skip
 - Decisions already made, so they do not get relitigated
 - Open questions being tracked
 
@@ -147,12 +165,21 @@ The more real context in here, the more Claude can carry on its own.
 
 ### Starting a session on a project
 
-Open Cowork with **two** folders selected: the root folder (for `ABOUT ME/`) and
+Open Cowork with **two** folders selected: the Cowork root (for `ABOUT ME/`) and
 the project folder. Claude reads both, and you start from full context without
 typing any of it.
 
-Selecting the project folder specifically — rather than the whole root — keeps
+Selecting the project folder specifically, rather than the whole root, keeps
 Claude focused and stops old projects eating the context window.
+
+---
+
+## MODE 4 — One specific question
+
+Answer it. Do not run the setup at them.
+
+If the answer only makes sense with setup they have not done, say which step is
+missing and offer to do that step, then stop and wait.
 
 ---
 
@@ -162,16 +189,16 @@ Claude focused and stops old projects eating the context window.
   of their budget re-reading themselves. Summarise, then start fresh.
 - **Match the model to the task.** Use a smaller, faster model for routine work
   and save the strongest one for genuinely hard problems.
-- **Say "save this as a template"** whenever Claude produces something you will
-  want again.
-- **Write things down in files, not in chat.** Chat is disposable; a file in the
+- **Write things down in files, not in chat.** Chat is disposable. A file in the
   project folder is context for every future session.
+- **Update `my-company.md` when priorities change.** The goals section goes stale
+  faster than anything else in the folder.
 
 ---
 
 ## A note on what goes in these files
 
-`ABOUT ME/` and every `CLAUDE.md` are read in full, every session — so treat them
+`ABOUT ME/` and every `CLAUDE.md` are read in full, every session, so treat them
 as documents someone else might read. Do not put credentials in them, and think
-before putting confidential client detail in a folder that gets shared, synced,
-or handed to a colleague.
+before putting confidential client detail in a folder that gets shared, synced or
+handed to a colleague.
