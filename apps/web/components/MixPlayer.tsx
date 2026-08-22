@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import type { Mix } from '@/lib/mixes';
+import type { Mix, MixGroup } from '@/lib/mixes';
 import { formatDuration } from '@/lib/duration';
 
 /**
@@ -41,7 +41,7 @@ function readLikes(): string[] {
   }
 }
 
-export default function MixPlayer({ mixes }: { mixes: Mix[] }) {
+export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
@@ -138,20 +138,30 @@ export default function MixPlayer({ mixes }: { mixes: Mix[] }) {
         }}
       />
 
-      {mixes.map(mix => (
-        <MixRow
-          key={mix.slug}
-          mix={mix}
-          active={activeSlug === mix.slug}
-          status={activeSlug === mix.slug ? status : 'idle'}
-          time={activeSlug === mix.slug ? time : 0}
-          liked={likes.includes(mix.slug)}
-          onToggle={() => toggle(mix)}
-          onSeek={s => seek(mix, s)}
-          onLike={() => toggleLike(mix.slug)}
-        />
+      {/* Groups are rendered here rather than as separate <MixPlayer>s per
+          section, because a second player means a second <audio> and two mixes
+          playing over each other. */}
+      {groups.map((group, gi) => (
+        <section key={group.label} className={gi > 0 ? 'mt-16' : undefined}>
+          <h2 className="rail-label">{group.label}</h2>
+          <div className="mt-4">
+            {group.mixes.map(mix => (
+              <MixRow
+                key={mix.slug}
+                mix={mix}
+                active={activeSlug === mix.slug}
+                status={activeSlug === mix.slug ? status : 'idle'}
+                time={activeSlug === mix.slug ? time : 0}
+                liked={likes.includes(mix.slug)}
+                onToggle={() => toggle(mix)}
+                onSeek={s => seek(mix, s)}
+                onLike={() => toggleLike(mix.slug)}
+              />
+            ))}
+            <div className="rule" />
+          </div>
+        </section>
       ))}
-      <div className="rule" />
     </div>
   );
 }
@@ -208,7 +218,7 @@ function MixRow({ mix, active, status, time, liked, onToggle, onSeek, onLike }: 
 
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-3 flex-wrap">
-            <h2 className="subdisplay">{mix.title}</h2>
+            <h3 className="subdisplay">{mix.title}</h3>
             <span className="rail-label">Hempi</span>
           </div>
 

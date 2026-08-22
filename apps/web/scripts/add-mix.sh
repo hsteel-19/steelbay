@@ -50,15 +50,18 @@ if [[ $code != 200 ]]; then
 fi
 
 duration=$(afinfo "$wav" | awk '/estimated duration/ {printf "%d", $3}')
+recorded=$(stat -f '%Sm' -t '%Y-%m-%d' "$wav")
 echo
 echo "done. add this to lib/mixes.ts:"
 echo
 cat <<ROW
   {
-    n: 'NN',
     slug: '$slug',
     title: 'TITLE',
-    recorded: 'YYYY-MM-DD',
+    recorded: '$recorded',
     duration: $duration,
   },
 ROW
+echo
+echo "(recorded is the master's timestamp — correct it if that is not the gig date)"
+echo "(to feature it, add '$slug' to FEATURED in lib/mixes.ts)"

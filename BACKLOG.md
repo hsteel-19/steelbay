@@ -1,6 +1,6 @@
 # Steelbay.io — Backlog
 
-Last updated: 2026-08-22 (EPIC-8 shipped: /music)
+Last updated: 2026-08-22 (EPIC-8: /music, nine mixes, featured section)
 
 **Next up:** SB-14 — the first real agent loop. Premise and rubric are locked
 (`DESIGN.md`); the loop instruction is ready to run as written.
@@ -254,8 +254,12 @@ nowhere to live.
              counter behind it. A real one needs a `mix_likes` table and a server
              route holding the service key, because no client may ever hold a
              Supabase key (see the RLS note under Risks).
-- [ ] SB-58  The remaining six mixes. `./scripts/add-mix.sh <slug> <wav> <cover>`
-             does encode, waveform, cover and upload, then prints the manifest row.
+- [x] SB-58  The remaining seven mixes — done 2026-08-22. Nine mixes, 11.5 hours.
+             `./scripts/add-mix.sh <slug> <wav> <cover>` does encode, waveform, cover
+             and upload, then prints the manifest row.
+- [x] SB-60  Featured section — done 2026-08-22. Three hand-picked mixes above the
+             rest, ordered by hand in `FEATURED`. Row numbers became derived from
+             recording date so grouping never renumbers anything.
 - [ ] SB-59  Supabase storage egress is now a real cost line. Two mixes is 140MB;
              eight will be ~560MB, and every full play is a full download. Worth a
              look at the bandwidth graph once the rest are up.

@@ -90,6 +90,12 @@ Mixes Henrik records when he DJs, as Hempi. Public, no gate.
 - Storage lives in the public Supabase bucket `mixes`. **The project's upload size
   limit was raised from the 50MB default to 2GB** (Project Settings → Storage) —
   without that, uploads fail with a 413 on both the standard and resumable endpoints.
+- **Featured mixes are hand-picked**, listed by slug in `FEATURED` in `lib/mixes.ts`,
+  in display order. They are not derived from date or length. A featured mix appears
+  once, at the top, and is filtered out of the list below — the player tracks the
+  playing mix by slug, so two rows sharing one would both light up as playing.
+- Row numbers are derived from recording date (oldest = 01), never written by hand,
+  so regrouping or featuring a mix does not renumber anything.
 - The heart button is `localStorage`, per device. There is no counter behind it (SB-57).
 - Adding a mix: `cd apps/web && ./scripts/add-mix.sh <slug> <master.wav> <cover.png>`,
   then paste the printed row into `lib/mixes.ts`.
