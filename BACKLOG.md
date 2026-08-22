@@ -250,12 +250,16 @@ nowhere to live.
              served from the Supabase `mixes` bucket; the source WAVs stay local.
              Waveforms are precomputed from the master into ~1.5KB JSON, because
              decoding a 79MB file in the browser just to draw bars is not an option.
-- [x] SB-57  Real like counts — done 2026-08-22. `mix_likes` + `bump_mix_like()`
-             in `002_mix_likes.sql`, written only by `/api/mixes/likes` with the
-             service key. RLS on with **no** policies, so unlike the other three
-             tables nothing but the service key can read it. Per-device "did I
-             like this" stays in localStorage. Degrades to a plain toggle until
-             the migration is run.
+- [x] SB-57  Real like counts — done 2026-08-22. Folded into `mix_stats` with
+             plays (SB-62) so there is one migration to run, not two. RLS on with
+             **no** policies, so unlike the other three tables nothing but the
+             service key can read it. Per-device "did I like this" stays in
+             localStorage. Degrades to a plain toggle until the migration is run.
+- [x] SB-62  Play counts — done 2026-08-22. One press of play is one play, counted
+             once per mix per page session so pause/resume does not inflate it.
+             Fire-and-forget write; the number comes from the next page load.
+- [x] SB-63  Genre tag per mix — done 2026-08-22. Henrik's own labels, in the meta
+             line as a mono label rather than a badge pill (DESIGN.md bans those).
 - [x] SB-61  Live gallery — done 2026-08-22. Six shots under the mixes, aspect
              preserved on one shared height, not clickable by request.
 - [x] SB-58  The remaining seven mixes — done 2026-08-22. Nine mixes, 11.5 hours.

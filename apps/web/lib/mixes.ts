@@ -22,6 +22,8 @@ interface MixSource {
   duration: number;
   /** Optional one-liner. Left off rather than filled with invented copy. */
   note?: string;
+  /** Henrik's own label for the set. Not derived from anything. */
+  genre: string;
 }
 
 export interface Mix extends MixSource {
@@ -46,6 +48,7 @@ const mixes: MixSource[] = [
     title: 'At the Hotel pt II',
     recorded: '2025-08-02',
     duration: 8711,
+    genre: 'House',
     note: 'Live @ Lydmar',
   },
   {
@@ -53,6 +56,7 @@ const mixes: MixSource[] = [
     title: 'At the Hotel pt I',
     recorded: '2025-07-30',
     duration: 6473,
+    genre: 'Lounge',
     note: 'Live @ Lydmar',
   },
   {
@@ -60,42 +64,49 @@ const mixes: MixSource[] = [
     title: 'Djungle',
     recorded: '2025-10-05',
     duration: 3791,
+    genre: 'Driving Techno',
   },
   {
     slug: 'view',
     title: 'VIEW',
     recorded: '2025-07-05',
     duration: 5130,
+    genre: 'Tech House',
   },
   {
     slug: 'diza-drift',
     title: 'Diza Drift',
     recorded: '2025-06-09',
     duration: 3856,
+    genre: 'Acid House',
   },
   {
     slug: 'tekno',
     title: 'Tekno',
     recorded: '2025-02-08',
     duration: 3622,
+    genre: 'Peak-Time / Driving',
   },
   {
     slug: 'pucken',
     title: 'Pucken',
     recorded: '2025-01-05',
     duration: 4626,
+    genre: 'Afro House',
   },
   {
     slug: 'stolen',
     title: 'Stolen',
     recorded: '2024-12-07',
     duration: 5159,
+    genre: 'Deep House',
   },
   {
     slug: 'sten',
     title: 'Sten',
     recorded: '2024-11-23',
     duration: 3599,
+    genre: 'Tech House',
   },
 ];
 
@@ -106,7 +117,7 @@ const mixes: MixSource[] = [
  * two rows sharing a slug would both light up as playing, because the player
  * tracks the active mix by slug.
  */
-const FEATURED = ['at-the-hotel-pt-ii', 'pucken', 'tekno'];
+const FEATURED = ['at-the-hotel-pt-ii', 'pucken', 'diza-drift'];
 
 function readPeaks(slug: string): number[] {
   const file = path.join(PEAKS_DIR, `${slug}.peaks.json`);

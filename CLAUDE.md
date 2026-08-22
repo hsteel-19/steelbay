@@ -96,17 +96,26 @@ Mixes Henrik records when he DJs, as Hempi. Public, no gate.
   playing mix by slug, so two rows sharing one would both light up as playing.
 - Row numbers are derived from recording date (oldest = 01), never written by hand,
   so regrouping or featuring a mix does not renumber anything.
+- **Counters live in `mix_stats`** (likes + plays, one row per mix), read and
+  written only by `/api/mixes/{stats,likes,plays}` with the service key.
+  `bump_mix_like()` / `bump_mix_play()` each move a counter in a single statement,
+  so simultaneous hits cannot lose a count.
 - **Hearts are two different facts.** Whether *you* liked a mix is `localStorage`,
-  per device — there are no accounts. *How many* people liked it is a global count
-  in `mix_likes`, read and written only by `/api/mixes/likes` with the service key.
-  The count moves optimistically in the UI and rolls back if the write is refused.
-  `bump_mix_like()` does it in one statement so simultaneous likes cannot be lost.
-  If `002_mix_likes.sql` has not been run, the API answers `enabled: false` and the
-  heart silently falls back to a per-device toggle — it never errors.
-- The **Live gallery** (`lib/photos.ts`, `public/live/`) preserves aspect ratio and
-  uses one shared height. The library mixes 9:16 gig posters with 3:2 photographs:
-  a square crop cut the venue and date off the posters, and masonry left ragged
-  columns. Add one with `./scripts/add-photo.sh <slug> <photo.jpg>`.
+  per device — there are no accounts. *How many* people did is the global count.
+  The like moves optimistically and rolls back if the write is refused.
+- **A play is one press of play**, counted once per mix per page session — pausing
+  and resuming is not a second listen. The write is fire-and-forget so it can never
+  delay playback, and the number shown comes from the next page load.
+- If `002_mix_stats.sql` has not been run, every endpoint answers `enabled: false`,
+  no counts render and the heart falls back to a per-device toggle. Nothing errors,
+  and no redeploy is needed once the migration runs.
+- The **Pics gallery** (`lib/photos.ts`, `public/live/`) is a gallery wall: three
+  hanging sizes picked by eye per photo, every aspect ratio left intact, all aligned
+  to a common bottom edge — that shared baseline is what makes mismatched frames
+  read as hung rather than scattered. The library mixes 9:16 gig posters with 3:2
+  photographs, so a square crop cut the venue and date off the posters. Add one with
+  `./scripts/add-photo.sh <slug> <photo.jpg>`.
+- **Genres are Henrik's own labels**, in `lib/mixes.ts`. Not derived from audio.
 - Adding a mix: `cd apps/web && ./scripts/add-mix.sh <slug> <master.wav> <cover.png>`,
   then paste the printed row into `lib/mixes.ts`.
 

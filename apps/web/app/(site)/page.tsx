@@ -8,7 +8,7 @@ const sections = [
     n: '01',
     href: '/articles',
     title: 'Articles',
-    note: 'Writing on AI-first organisations, governance and what actually changes.',
+    note: 'Writing about AI-native companies, with a focus on operations.',
   },
   {
     n: '02',

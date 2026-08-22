@@ -1,11 +1,18 @@
 import Image from 'next/image';
 import MixPlayer from '@/components/MixPlayer';
 import { getMixGroups, getAllMixes } from '@/lib/mixes';
-import { getPhotos } from '@/lib/photos';
+import { getPhotos, type PhotoScale } from '@/lib/photos';
 
 export const metadata = {
   title: 'Music',
   description: 'Various mixtapes from Hempi',
+};
+
+/** The three hanging sizes. Kept out of the JSX so the wall is tuned in one place. */
+const scaleClass: Record<PhotoScale, string> = {
+  sm: 'h-20 sm:h-28',
+  md: 'h-28 sm:h-40',
+  lg: 'h-36 sm:h-52',
 };
 
 export default function MusicPage() {
@@ -28,7 +35,7 @@ export default function MusicPage() {
         <div className="content">
           <h1 className="display">MUSIC</h1>
 
-          <p className="measure mt-10 text-[var(--muted)]">Various mixtapes :)</p>
+          <p className="measure mt-10 text-[var(--muted)]">Various mixtapes, various genres</p>
 
           <div className="mt-16">
             <MixPlayer groups={groups} />
@@ -36,13 +43,13 @@ export default function MusicPage() {
 
           {photos.length > 0 && (
             <section className="mt-16">
-              <h2 className="rail-label">Live</h2>
-              {/* One height, natural widths. The library mixes 9:16 gig posters
-                  with 3:2 photographs: cropping them to a common square took the
-                  venue and the date clean off the posters, and a masonry left
-                  ragged column bottoms. A shared baseline keeps the row tidy
-                  without touching a single image. */}
-              <div className="mt-4 flex flex-wrap items-start gap-3">
+              <h2 className="rail-label">Pics</h2>
+              {/* A gallery wall: three hanging sizes, every aspect ratio left
+                  alone, all of it aligned to a common bottom edge — which is
+                  what makes a row of mismatched frames read as hung rather than
+                  as scattered. Cropping to a uniform square was tried first and
+                  took the venue and the date clean off the 9:16 posters. */}
+              <div className="mt-4 flex flex-wrap items-end gap-3 sm:gap-4">
                 {photos.map(photo => (
                   <Image
                     key={photo.src}
@@ -50,8 +57,8 @@ export default function MusicPage() {
                     alt={photo.alt}
                     width={photo.width}
                     height={photo.height}
-                    sizes="240px"
-                    className="h-28 sm:h-36 w-auto border border-[var(--rule)]"
+                    sizes="320px"
+                    className={`w-auto border border-[var(--rule)] ${scaleClass[photo.scale]}`}
                   />
                 ))}
               </div>

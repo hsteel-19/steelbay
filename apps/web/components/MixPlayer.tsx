@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { Mix, MixGroup } from '@/lib/mixes';
+import type { MixStat } from '@/lib/mix-stats';
 import { formatDuration } from '@/lib/duration';
 
 /**
@@ -47,7 +48,7 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
   const [status, setStatus] = useState<Status>('idle');
   const [time, setTime] = useState(0);
   const [likes, setLikes] = useState<string[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [stats, setStats] = useState<Record<string, MixStat>>({});
 
   // Two different facts, stored in two different places. WHETHER YOU liked a
   // mix is localStorage, per device — there are no accounts here. HOW MANY
@@ -57,17 +58,47 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/mixes/likes')
+    fetch('/api/mixes/stats')
       .then(r => r.json())
-      .then(({ counts }) => {
-        if (!cancelled && counts) setCounts(counts);
+      .then(({ stats: fetched }) => {
+        if (!cancelled && fetched) setStats(fetched);
       })
-      // A failed count fetch must not break playback, which is the point of the
-      // page. The hearts simply show no number.
+      // A failed stats fetch must not break playback, which is the point of the
+      // page. The counters simply show no number.
       .catch(() => {});
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  /**
+   * Plays already counted this page session. A play is a press of play, but
+   * pausing and resuming the same mix is not a second listen — without this,
+   * fidgeting with the button inflates the number.
+   */
+  const counted = useRef<Set<string>>(new Set());
+
+  const countPlay = useCallback((slug: string) => {
+    if (counted.current.has(slug)) return;
+    counted.current.add(slug);
+
+    // Deliberately fire-and-forget: the number on screen comes from the next
+    // page load, so this must never delay or interrupt playback.
+    fetch('/api/mixes/plays', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(res => {
+        if (res && typeof res.plays === 'number') {
+          setStats(prev => ({ ...prev, [slug]: { ...(prev[slug] ?? { likes: 0, plays: 0 }), plays: res.plays } }));
+        }
+      })
+      .catch(() => {
+        // Let it be recounted if the user presses play again later.
+        counted.current.delete(slug);
+      });
   }, []);
 
   const toggleLike = useCallback(
@@ -85,7 +116,13 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
 
       // Move the number immediately, then let the server's answer replace it.
       // The count is authoritative, so a rejected write has to put it back.
-      setCounts(prev => ({ ...prev, [slug]: Math.max(0, (prev[slug] ?? 0) + delta) }));
+      const shift = (by: number) =>
+        setStats(prev => {
+          const cur = prev[slug] ?? { likes: 0, plays: 0 };
+          return { ...prev, [slug]: { ...cur, likes: Math.max(0, cur.likes + by) } };
+        });
+
+      shift(delta);
 
       fetch('/api/mixes/likes', {
         method: 'POST',
@@ -93,12 +130,15 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
         body: JSON.stringify({ slug, delta }),
       })
         .then(r => (r.ok ? r.json() : Promise.reject(new Error('rejected'))))
-        .then(({ count }) => {
-          if (typeof count === 'number') setCounts(prev => ({ ...prev, [slug]: count }));
+        .then(({ likes }) => {
+          if (typeof likes === 'number') {
+            setStats(prev => ({
+              ...prev,
+              [slug]: { ...(prev[slug] ?? { likes: 0, plays: 0 }), likes },
+            }));
+          }
         })
-        .catch(() => {
-          setCounts(prev => ({ ...prev, [slug]: Math.max(0, (prev[slug] ?? 0) - delta) }));
-        });
+        .catch(() => shift(-delta));
     },
     [likes],
   );
@@ -128,9 +168,11 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
         setTime(seek);
       }
 
-      el.play().catch(() => setStatus('error'));
+      el.play()
+        .then(() => countPlay(mix.slug))
+        .catch(() => setStatus('error'));
     },
-    [activeSlug],
+    [activeSlug, countPlay],
   );
 
   const toggle = useCallback(
@@ -192,7 +234,7 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
                 status={activeSlug === mix.slug ? status : 'idle'}
                 time={activeSlug === mix.slug ? time : 0}
                 liked={likes.includes(mix.slug)}
-                count={counts[mix.slug] ?? 0}
+                stat={stats[mix.slug]}
                 onToggle={() => toggle(mix)}
                 onSeek={s => seek(mix, s)}
                 onLike={() => toggleLike(mix.slug)}
@@ -212,17 +254,19 @@ interface RowProps {
   status: Status;
   time: number;
   liked: boolean;
-  count: number;
+  stat?: MixStat;
   onToggle: () => void;
   onSeek: (seconds: number) => void;
   onLike: () => void;
 }
 
-function MixRow({ mix, active, status, time, liked, count, onToggle, onSeek, onLike }: RowProps) {
+function MixRow({ mix, active, status, time, liked, stat, onToggle, onSeek, onLike }: RowProps) {
   const playing = active && status === 'playing';
   const loading = active && status === 'loading';
   const failed = active && status === 'error';
   const progress = mix.duration > 0 ? Math.min(1, time / mix.duration) : 0;
+  const plays = stat?.plays ?? 0;
+  const likes = stat?.likes ?? 0;
   const peaks = mix.peaks.length ? mix.peaks : new Array(BARS).fill(0);
 
   const onWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -271,6 +315,10 @@ function MixRow({ mix, active, status, time, liked, count, onToggle, onSeek, onL
               })}
             </span>
             <span className="meta">{formatDuration(mix.duration)}</span>
+            {/* A label, not a badge pill — DESIGN.md bans those as decoration.
+                It sits in the meta line with the date and the running time
+                because that is what it is: another fact about the set. */}
+            <span className="rail-label">{mix.genre}</span>
             {loading && <span className="rail-label">Loading</span>}
             {failed && <span className="rail-label text-[var(--color-red)]">Unavailable</span>}
           </div>
@@ -355,6 +403,21 @@ function MixRow({ mix, active, status, time, liked, count, onToggle, onSeek, onL
               {active ? formatDuration(time) : '0:00'}
             </span>
 
+            {/* Plays. Not a button — it is a readout, so it must not look like
+                something to press. Hidden at zero rather than showing every
+                mix a proud 0. */}
+            {plays > 0 && (
+              <span
+                className="meta shrink-0 flex items-center gap-1.5 tabular-nums"
+                title={`${plays} ${plays === 1 ? 'play' : 'plays'}`}
+              >
+                <svg width="8" height="9" viewBox="0 0 8 9" aria-hidden="true">
+                  <path d="M0 0 L8 4.5 L0 9 Z" fill="currentColor" />
+                </svg>
+                {plays}
+              </span>
+            )}
+
             <button
               type="button"
               onClick={onLike}
@@ -377,7 +440,7 @@ function MixRow({ mix, active, status, time, liked, count, onToggle, onSeek, onL
               {/* A zero is not worth printing, and reads as a scoreboard nobody
                   is on. The number appears once there is one. */}
               <span className="meta tabular-nums w-3 text-left" style={{ color: 'inherit' }}>
-                {count > 0 ? count : ''}
+                {likes > 0 ? likes : ''}
               </span>
             </button>
           </div>
