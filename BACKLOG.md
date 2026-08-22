@@ -1,6 +1,6 @@
 # Steelbay.io — Backlog
 
-Last updated: 2026-08-06 (site built to DESIGN.md; SB-14 at its pass-2 checkpoint)
+Last updated: 2026-08-22 (EPIC-8 shipped: /music)
 
 **Next up:** SB-14 — the first real agent loop. Premise and rubric are locked
 (`DESIGN.md`); the loop instruction is ready to run as written.
@@ -240,6 +240,27 @@ domain with no protection at all. See the note under Risks.
              Check the monthly path when fixing it: `generateMonthlySummaryIfNeeded`
              bails after day 7, so it depends on a Sunday landing in days 1–7. That
              always holds, but it is load-bearing and undocumented.
+
+## EPIC-8 · Music
+**Status:** Shipped, more mixes to come · **Why:** Henrik DJs, and the mixes had
+nowhere to live.
+
+- [x] SB-56  `/music` — SoundCloud-shaped mix list: cover, play/pause, seekable
+             waveform, heart. Done 2026-08-22. Audio is transcoded to 128k AAC and
+             served from the Supabase `mixes` bucket; the source WAVs stay local.
+             Waveforms are precomputed from the master into ~1.5KB JSON, because
+             decoding a 79MB file in the browser just to draw bars is not an option.
+- [ ] SB-57  Real like counts. The heart is `localStorage` only — per device, no
+             counter behind it. A real one needs a `mix_likes` table and a server
+             route holding the service key, because no client may ever hold a
+             Supabase key (see the RLS note under Risks).
+- [ ] SB-58  The remaining six mixes. `./scripts/add-mix.sh <slug> <wav> <cover>`
+             does encode, waveform, cover and upload, then prints the manifest row.
+- [ ] SB-59  Supabase storage egress is now a real cost line. Two mixes is 140MB;
+             eight will be ~560MB, and every full play is a full download. Worth a
+             look at the bandwidth graph once the rest are up.
+
+---
 
 ## EPIC-7 · Loop engineering
 **Status:** In progress · **Why:** Henrik wants to build and run agent loops well.

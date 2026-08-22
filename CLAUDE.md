@@ -13,11 +13,14 @@ truth for what to work on, with stable ticket IDs (`SB-n`).
 apps/web/              — the site (Next.js App Router → Vercel)
   app/
     page.tsx           — landing page
+    music/             — DJ mixes, public
     vibe-check/        — mood dashboard, gated
     unlock/            — six-digit code entry
     api/unlock/        — verifies the code, sets the cookie
-  components/          — dashboard UI
+  components/          — dashboard UI, mix player
+  content/mixes/       — precomputed waveform peaks (JSON)
   lib/                 — supabase clients, auth helpers
+  scripts/add-mix.sh   — encode + waveform + cover + upload, one command
   middleware.ts        — gates /vibe-check
 scripts/               — automation, run by GitHub Actions
   sync-fireflies.ts    — weekdays: fetch transcript, parse, upsert
@@ -69,6 +72,27 @@ fireflies_id), `weekly_summaries`, `monthly_summaries`.
 **Dashboard**: heatmap calendar (weekdays only), day modal with the full
 reflection, monthly chart, monthly AI summary, and seasonal trends that get more
 useful as history accumulates.
+
+## Music (/music)
+
+Mixes Henrik records when he DJs, as Hempi. Public, no gate.
+
+- **Source of truth is the WAV**, and it stays on his Mac. Only a 128k AAC copy
+  is uploaded — a two-hour mix is ~1.2GB as WAV and ~115MB as AAC, and the page
+  streams it whole.
+- `afconvert` writes the `moov` atom at the front, so the file seeks before it
+  has finished downloading. Supabase serves `206 Partial Content`, which is what
+  makes scrubbing work at all. Do not switch to a format or host that loses either.
+- **Waveforms are precomputed** from the master by `scripts/mix-peaks.mjs` into
+  480 quantised peaks (~1.5KB of JSON). The browser never decodes audio to draw them.
+  The stored peaks are raw; `MixPlayer` curves them at draw time, because a mastered
+  mix is compressed flat and renders as a solid block otherwise.
+- Storage lives in the public Supabase bucket `mixes`. **The project's upload size
+  limit was raised from the 50MB default to 2GB** (Project Settings → Storage) —
+  without that, uploads fail with a 413 on both the standard and resumable endpoints.
+- The heart button is `localStorage`, per device. There is no counter behind it (SB-57).
+- Adding a mix: `cd apps/web && ./scripts/add-mix.sh <slug> <master.wav> <cover.png>`,
+  then paste the printed row into `lib/mixes.ts`.
 
 ## Automation schedule
 

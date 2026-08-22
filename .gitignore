@@ -10,3 +10,10 @@ dist/
 next-env.d.ts
 *.tsbuildinfo
 apps/web/public/skills/*.zip
+
+# Mix masters. WAVs are 600MB-1.2GB each and never leave the machine —
+# only the AAC copy is uploaded. See CLAUDE.md, Music.
+# Leading slash is load-bearing: git sets core.ignorecase=true on macOS, so an
+# unanchored `Music/` also matches `app/(site)/music/` and silently un-tracks
+# the route — a site that builds clean locally and 404s in production.
+/Music/

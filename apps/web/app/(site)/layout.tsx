@@ -5,15 +5,18 @@ const nav = [
   { href: '/claude', label: 'Claude' },
   { href: '/projects', label: 'Projects' },
   { href: '/vibe-check', label: 'Vibe Check' },
+  { href: '/music', label: 'Music' },
 ];
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Four items plus the wordmark do not fit on one 375px line. Rather than
-          let the nav scroll sideways and hide Vibe Check behind a scrollbar, it
-          drops to its own rule-separated row — a deliberate second band, not an
-          overflow accident. */}
+      {/* The nav does not fit on one 375px line beside the wordmark, so it drops
+          to its own rule-separated row — a deliberate second band, not an
+          overflow accident. With five items that band now wraps to two lines:
+          justify-between squeezed the gaps to 6.5px and the labels read as one
+          run-on string. Wrapping keeps every item visible at a legible gap,
+          which sideways scrolling would not. */}
       <header>
         <div className="field flex items-center h-16">
           <Link href="/" className="rail-label !text-[var(--ink)] tracking-[0.2em]">
@@ -32,7 +35,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </div>
         <nav className="sm:hidden rule">
-          <div className="field flex items-center justify-between h-11">
+          <div className="field flex flex-wrap items-center gap-x-6 gap-y-1 py-3">
             {nav.map(({ href, label }) => (
               <Link
                 key={href}

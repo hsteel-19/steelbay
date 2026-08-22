@@ -29,6 +29,12 @@ const sections = [
     note: 'A spoken reflection every weekday, transcribed and rated. Private.',
     locked: true,
   },
+  {
+    n: '05',
+    href: '/music',
+    title: 'Music',
+    note: 'Mixes I record when I DJ, uploaded full length.',
+  },
 ];
 
 export default function Home() {
