@@ -96,7 +96,17 @@ Mixes Henrik records when he DJs, as Hempi. Public, no gate.
   playing mix by slug, so two rows sharing one would both light up as playing.
 - Row numbers are derived from recording date (oldest = 01), never written by hand,
   so regrouping or featuring a mix does not renumber anything.
-- The heart button is `localStorage`, per device. There is no counter behind it (SB-57).
+- **Hearts are two different facts.** Whether *you* liked a mix is `localStorage`,
+  per device — there are no accounts. *How many* people liked it is a global count
+  in `mix_likes`, read and written only by `/api/mixes/likes` with the service key.
+  The count moves optimistically in the UI and rolls back if the write is refused.
+  `bump_mix_like()` does it in one statement so simultaneous likes cannot be lost.
+  If `002_mix_likes.sql` has not been run, the API answers `enabled: false` and the
+  heart silently falls back to a per-device toggle — it never errors.
+- The **Live gallery** (`lib/photos.ts`, `public/live/`) preserves aspect ratio and
+  uses one shared height. The library mixes 9:16 gig posters with 3:2 photographs:
+  a square crop cut the venue and date off the posters, and masonry left ragged
+  columns. Add one with `./scripts/add-photo.sh <slug> <photo.jpg>`.
 - Adding a mix: `cd apps/web && ./scripts/add-mix.sh <slug> <master.wav> <cover.png>`,
   then paste the printed row into `lib/mixes.ts`.
 

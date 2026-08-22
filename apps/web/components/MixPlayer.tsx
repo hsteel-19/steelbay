@@ -47,22 +47,61 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
   const [status, setStatus] = useState<Status>('idle');
   const [time, setTime] = useState(0);
   const [likes, setLikes] = useState<string[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
-  // Hearts are per-device, in localStorage. There is no likes table behind this
-  // — see BACKLOG SB-57 if it should ever become a real count.
+  // Two different facts, stored in two different places. WHETHER YOU liked a
+  // mix is localStorage, per device — there are no accounts here. HOW MANY
+  // people liked it is a global count on the server. Neither can stand in for
+  // the other.
   useEffect(() => setLikes(readLikes()), []);
 
-  const toggleLike = useCallback((slug: string) => {
-    setLikes(prev => {
-      const next = prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug];
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/mixes/likes')
+      .then(r => r.json())
+      .then(({ counts }) => {
+        if (!cancelled && counts) setCounts(counts);
+      })
+      // A failed count fetch must not break playback, which is the point of the
+      // page. The hearts simply show no number.
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const toggleLike = useCallback(
+    (slug: string) => {
+      const liked = likes.includes(slug);
+      const delta = liked ? -1 : 1;
+      const next = liked ? likes.filter(s => s !== slug) : [...likes, slug];
+
+      setLikes(next);
       try {
         window.localStorage.setItem(LIKES_KEY, JSON.stringify(next));
       } catch {
-        /* nothing to do; the in-memory state still flips for this session */
+        /* private-mode Safari; the in-memory state still flips for this session */
       }
-      return next;
-    });
-  }, []);
+
+      // Move the number immediately, then let the server's answer replace it.
+      // The count is authoritative, so a rejected write has to put it back.
+      setCounts(prev => ({ ...prev, [slug]: Math.max(0, (prev[slug] ?? 0) + delta) }));
+
+      fetch('/api/mixes/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, delta }),
+      })
+        .then(r => (r.ok ? r.json() : Promise.reject(new Error('rejected'))))
+        .then(({ count }) => {
+          if (typeof count === 'number') setCounts(prev => ({ ...prev, [slug]: count }));
+        })
+        .catch(() => {
+          setCounts(prev => ({ ...prev, [slug]: Math.max(0, (prev[slug] ?? 0) - delta) }));
+        });
+    },
+    [likes],
+  );
 
   /** Start `mix` at `seek` seconds, switching source if it is not already loaded. */
   const play = useCallback(
@@ -153,6 +192,7 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
                 status={activeSlug === mix.slug ? status : 'idle'}
                 time={activeSlug === mix.slug ? time : 0}
                 liked={likes.includes(mix.slug)}
+                count={counts[mix.slug] ?? 0}
                 onToggle={() => toggle(mix)}
                 onSeek={s => seek(mix, s)}
                 onLike={() => toggleLike(mix.slug)}
@@ -172,12 +212,13 @@ interface RowProps {
   status: Status;
   time: number;
   liked: boolean;
+  count: number;
   onToggle: () => void;
   onSeek: (seconds: number) => void;
   onLike: () => void;
 }
 
-function MixRow({ mix, active, status, time, liked, onToggle, onSeek, onLike }: RowProps) {
+function MixRow({ mix, active, status, time, liked, count, onToggle, onSeek, onLike }: RowProps) {
   const playing = active && status === 'playing';
   const loading = active && status === 'loading';
   const failed = active && status === 'error';
@@ -318,8 +359,10 @@ function MixRow({ mix, active, status, time, liked, onToggle, onSeek, onLike }: 
               type="button"
               onClick={onLike}
               aria-pressed={liked}
-              aria-label={liked ? `Unlike ${mix.title}` : `Like ${mix.title}`}
-              className="shrink-0 w-11 h-11 flex items-center justify-center text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+              aria-label={
+                liked ? `Unlike ${mix.title}` : `Like ${mix.title}`
+              }
+              className="shrink-0 h-11 pl-2 flex items-center gap-1.5 text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
               style={liked ? { color: 'var(--accent)' } : undefined}
             >
               <svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true">
@@ -331,6 +374,11 @@ function MixRow({ mix, active, status, time, liked, onToggle, onSeek, onLike }: 
                   strokeLinejoin="round"
                 />
               </svg>
+              {/* A zero is not worth printing, and reads as a scoreboard nobody
+                  is on. The number appears once there is one. */}
+              <span className="meta tabular-nums w-3 text-left" style={{ color: 'inherit' }}>
+                {count > 0 ? count : ''}
+              </span>
             </button>
           </div>
         </div>

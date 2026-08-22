@@ -250,10 +250,14 @@ nowhere to live.
              served from the Supabase `mixes` bucket; the source WAVs stay local.
              Waveforms are precomputed from the master into ~1.5KB JSON, because
              decoding a 79MB file in the browser just to draw bars is not an option.
-- [ ] SB-57  Real like counts. The heart is `localStorage` only — per device, no
-             counter behind it. A real one needs a `mix_likes` table and a server
-             route holding the service key, because no client may ever hold a
-             Supabase key (see the RLS note under Risks).
+- [x] SB-57  Real like counts — done 2026-08-22. `mix_likes` + `bump_mix_like()`
+             in `002_mix_likes.sql`, written only by `/api/mixes/likes` with the
+             service key. RLS on with **no** policies, so unlike the other three
+             tables nothing but the service key can read it. Per-device "did I
+             like this" stays in localStorage. Degrades to a plain toggle until
+             the migration is run.
+- [x] SB-61  Live gallery — done 2026-08-22. Six shots under the mixes, aspect
+             preserved on one shared height, not clickable by request.
 - [x] SB-58  The remaining seven mixes — done 2026-08-22. Nine mixes, 11.5 hours.
              `./scripts/add-mix.sh <slug> <wav> <cover>` does encode, waveform, cover
              and upload, then prints the manifest row.
