@@ -25,10 +25,7 @@ export default function MusicPage() {
         <div className="content">
           <h1 className="display">MUSIC</h1>
 
-          <p className="measure mt-10 text-[var(--muted)]">
-            Mixes I record when I DJ, uploaded full length. The waveform is drawn from the
-            master before anything is compressed, so it shows where the set actually goes.
-          </p>
+          <p className="measure mt-10 text-[var(--muted)]">Various mixtapes :)</p>
 
           <div className="mt-16">
             <MixPlayer mixes={mixes} />
