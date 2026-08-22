@@ -21,12 +21,19 @@ function knownSlugs(): Set<string> {
 }
 
 /**
- * Postgres reports an undefined table/function as 42P01/42883. That is the
- * expected state until 002_mix_likes.sql is run, and it should read as "no
- * counts yet" rather than as a broken page.
+ * "The schema is not there yet", in the several dialects it arrives in.
+ * Postgres raises 42P01/42883 for an undefined table/function, but PostgREST
+ * usually answers from its schema cache first and never reaches Postgres:
+ * PGRST205 for a missing table, PGRST202 for a missing function. Verified by
+ * calling both against the live project before the migration was run.
+ *
+ * This is the expected state until 002_mix_likes.sql runs, and it should read
+ * as "no counts yet", not as a broken page.
  */
+const MISSING_SCHEMA = new Set(['42P01', '42883', 'PGRST202', 'PGRST205']);
+
 function isMissingSchema(code?: string): boolean {
-  return code === '42P01' || code === '42883' || code === 'PGRST202';
+  return code !== undefined && MISSING_SCHEMA.has(code);
 }
 
 export async function GET() {
