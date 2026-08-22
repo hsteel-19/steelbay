@@ -1,5 +1,21 @@
-import { supabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
 import { getAllMixes } from '@/lib/mixes';
+
+/**
+ * A separate client for the counters, with Next's Data Cache switched off.
+ *
+ * supabase-js talks over `fetch`, and Next patches `fetch` with a persistent
+ * Data Cache. The shared client therefore answered every request with the first
+ * result it ever saw: writes landed in Postgres, the row count climbed, and the
+ * page kept showing the numbers from the first render — with `x-vercel-cache:
+ * MISS` on the response, so it looked freshly computed. Counters are the one
+ * thing on this site that must never be served from a cache.
+ */
+const statsClient = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!,
+  { global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) } },
+);
 
 /**
  * Shared plumbing for the /music counters.
@@ -7,6 +23,8 @@ import { getAllMixes } from '@/lib/mixes';
  * Everything here runs server-side against the service key. No Supabase
  * credential is ever handed to the browser — see CLAUDE.md.
  */
+
+export { statsClient };
 
 export interface MixStat {
   likes: number;
@@ -35,7 +53,7 @@ export function isKnownMix(slug: unknown): slug is string {
 }
 
 export async function readStats(): Promise<Record<string, MixStat> | null> {
-  const { data, error } = await supabaseServer.from('mix_stats').select('slug, likes, plays');
+  const { data, error } = await statsClient.from('mix_stats').select('slug, likes, plays');
 
   if (error) {
     if (!isMissingSchema(error.code)) console.error('mix_stats read failed', error);

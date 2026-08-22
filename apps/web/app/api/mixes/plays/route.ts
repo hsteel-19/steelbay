@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
-import { isKnownMix, isMissingSchema } from '@/lib/mix-stats';
+import { isKnownMix, isMissingSchema, statsClient } from '@/lib/mix-stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'unknown mix' }, { status: 400 });
   }
 
-  const { data, error } = await supabaseServer.rpc('bump_mix_play', { p_slug: slug });
+  const { data, error } = await statsClient.rpc('bump_mix_play', { p_slug: slug });
 
   if (error) {
     if (isMissingSchema(error.code)) return NextResponse.json({ enabled: false });

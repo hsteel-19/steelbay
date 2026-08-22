@@ -58,7 +58,7 @@ export default function MixPlayer({ groups }: { groups: MixGroup[] }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/mixes/stats')
+    fetch('/api/mixes/stats', { cache: 'no-store' })
       .then(r => r.json())
       .then(({ stats: fetched }) => {
         if (!cancelled && fetched) setStats(fetched);

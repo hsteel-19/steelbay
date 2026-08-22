@@ -63,3 +63,14 @@ $$;
 -- browser never gets a Supabase credential.
 REVOKE EXECUTE ON FUNCTION bump_mix_like(TEXT, INT) FROM anon, authenticated;
 REVOKE EXECUTE ON FUNCTION bump_mix_play(TEXT) FROM anon, authenticated;
+
+-- Required, and easy to miss: service_role bypasses RLS but still needs a
+-- table-level GRANT. Without this the bump_* functions still work — they are
+-- SECURITY DEFINER and run as the owner — so counts record correctly and then
+-- fail to read back with 42501, which looks exactly like the feature working.
+-- SELECT only: all writes go through the two functions above.
+GRANT SELECT ON public.mix_stats TO service_role;
+
+-- anon and authenticated get nothing. The counts reach the browser only as
+-- JSON from our own API route.
+REVOKE ALL ON public.mix_stats FROM anon, authenticated;

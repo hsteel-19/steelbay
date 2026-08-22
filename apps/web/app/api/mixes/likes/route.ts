@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
-import { isKnownMix, isMissingSchema } from '@/lib/mix-stats';
+import { isKnownMix, isMissingSchema, statsClient } from '@/lib/mix-stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'delta must be 1 or -1' }, { status: 400 });
   }
 
-  const { data, error } = await supabaseServer.rpc('bump_mix_like', {
+  const { data, error } = await statsClient.rpc('bump_mix_like', {
     p_slug: slug,
     p_delta: delta,
   });
