@@ -24,9 +24,15 @@ interface MixSource {
   note?: string;
   /** Henrik's own label for the set. Not derived from anything. */
   genre: string;
+  /** Who it is credited to. Left off for Hempi's own mixes. */
+  artist?: string;
+  /** A produced track rather than a recorded set. Left off for mixes. */
+  kind?: 'mix' | 'track';
 }
 
 export interface Mix extends MixSource {
+  artist: string;
+  kind: 'mix' | 'track';
   /** Chronological rank, oldest = 01. Derived, never written by hand. */
   n: string;
   audio: string;
@@ -43,6 +49,15 @@ export interface MixGroup {
 // Add a mix: ./scripts/add-mix.sh <slug> <master.wav> <cover.png> encodes,
 // uploads and prints the row to paste in here. Nothing else to touch.
 const mixes: MixSource[] = [
+  {
+    slug: 'ezy-u-know',
+    title: 'EZY U KNOW',
+    artist: 'Stockholm Cyclo & Hempi',
+    kind: 'track',
+    recorded: '2026-10-10',
+    duration: 304,
+    genre: 'Deep House',
+  },
   {
     slug: 'at-the-hotel-pt-ii',
     title: 'At the Hotel pt II',
@@ -111,13 +126,13 @@ const mixes: MixSource[] = [
 ];
 
 /**
- * The three that go at the top, in this order. Henrik picks these by hand —
+ * The ones that go at the top, in this order. Henrik picks these by hand —
  * they are not "most recent" or "longest" and should not be derived from
  * anything. A featured mix is listed once, up here, and not repeated below:
  * two rows sharing a slug would both light up as playing, because the player
  * tracks the active mix by slug.
  */
-const FEATURED = ['at-the-hotel-pt-ii', 'pucken', 'diza-drift'];
+const FEATURED = ['ezy-u-know', 'at-the-hotel-pt-ii', 'pucken', 'diza-drift'];
 
 function readPeaks(slug: string): number[] {
   const file = path.join(PEAKS_DIR, `${slug}.peaks.json`);
@@ -137,6 +152,8 @@ function chronology(): Map<string, string> {
 function hydrate(m: MixSource, n: string): Mix {
   return {
     ...m,
+    artist: m.artist ?? 'Hempi',
+    kind: m.kind ?? 'mix',
     n,
     audio: `${AUDIO_BASE}/${m.slug}.m4a`,
     cover: `/mixes/${m.slug}.jpg`,

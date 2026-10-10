@@ -304,7 +304,7 @@ function MixRow({ mix, active, status, time, liked, stat, onToggle, onSeek, onLi
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-3 flex-wrap">
             <h3 className="subdisplay">{mix.title}</h3>
-            <span className="rail-label">Hempi</span>
+            <span className="rail-label">{mix.artist}</span>
           </div>
 
           <div className="mt-1 flex items-baseline gap-4 flex-wrap">

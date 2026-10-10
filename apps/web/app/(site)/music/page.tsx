@@ -20,6 +20,8 @@ export default function MusicPage() {
   const all = getAllMixes();
   const photos = getPhotos();
   const total = all.reduce((sum, m) => sum + m.duration, 0);
+  const tracks = all.filter(m => m.kind === 'track').length;
+  const sets = all.length - tracks;
 
   return (
     <section className="field pt-16 pb-24 lg:pt-24">
@@ -27,7 +29,12 @@ export default function MusicPage() {
         <div className="rail">
           <div className="flex lg:block gap-x-6 gap-y-1 flex-wrap pb-6 lg:pb-0 border-b lg:border-b-0 border-[var(--rule)] mb-8 lg:mb-0">
             <span className="rail-label">05 — Music</span>
-            <span className="meta lg:block lg:mt-6">{all.length} mixes</span>
+            <span className="meta lg:block lg:mt-6">{sets} mixes</span>
+            {tracks > 0 && (
+              <span className="meta lg:block lg:mt-1">
+                {tracks} {tracks === 1 ? 'track' : 'tracks'}
+              </span>
+            )}
             <span className="meta lg:block lg:mt-1">{Math.round(total / 3600)} hours</span>
           </div>
         </div>

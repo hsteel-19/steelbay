@@ -49,9 +49,14 @@ async function peaks(file) {
   const h = readWavHeader(fd);
   fs.closeSync(fd);
 
-  if (h.bitsPerSample !== 16) throw new Error(`expected 16-bit PCM, got ${h.bitsPerSample}-bit`);
+  // DJ exports are 16-bit; studio bounces of a produced track are usually 24.
+  // Only the magnitude matters here, so both are read as signed ints.
+  if (h.bitsPerSample !== 16 && h.bitsPerSample !== 24) {
+    throw new Error(`expected 16- or 24-bit PCM, got ${h.bitsPerSample}-bit`);
+  }
 
-  const bytesPerFrame = (h.bitsPerSample / 8) * h.channels;
+  const bytesPerSample = h.bitsPerSample / 8;
+  const bytesPerFrame = bytesPerSample * h.channels;
   // dataSize can overstate what is actually on disk if the export was truncated.
   const realSize = Math.min(h.dataSize, fs.statSync(file).size - h.dataOffset);
   const frames = Math.floor(realSize / bytesPerFrame);
@@ -79,7 +84,7 @@ async function peaks(file) {
       // prettier waveform, but peak is what actually shows where the drops are.
       let v = 0;
       for (let c = 0; c < h.channels; c++) {
-        const s = Math.abs(buf.readInt16LE(i + c * 2));
+        const s = Math.abs(buf.readIntLE(i + c * bytesPerSample, bytesPerSample));
         if (s > v) v = s;
       }
       if (v > barMax) barMax = v;

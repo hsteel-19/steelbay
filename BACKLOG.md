@@ -260,6 +260,10 @@ nowhere to live.
              Fire-and-forget write; the number comes from the next page load.
 - [x] SB-63  Genre tag per mix — done 2026-08-22. Henrik's own labels, in the meta
              line as a mono label rather than a badge pill (DESIGN.md bans those).
+- [x] SB-64  First produced track: EZY U KNOW, Stockholm Cyclo & Hempi — done 2026-10-10.
+             Featured first. Rows now carry an optional `artist` and `kind: 'track'`;
+             the rail counts mixes and tracks separately. `mix-peaks.mjs` reads
+             24-bit masters too, since a studio bounce is not a 16-bit DJ export.
 - [x] SB-61  Live gallery — done 2026-08-22. Six shots under the mixes, aspect
              preserved on one shared height, not clickable by request.
 - [x] SB-58  The remaining seven mixes — done 2026-08-22. Nine mixes, 11.5 hours.

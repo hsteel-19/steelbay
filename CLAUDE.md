@@ -116,6 +116,9 @@ Mixes Henrik records when he DJs, as Hempi. Public, no gate.
   photographs, so a square crop cut the venue and date off the posters. Add one with
   `./scripts/add-photo.sh <slug> <photo.jpg>`.
 - **Genres are Henrik's own labels**, in `lib/mixes.ts`. Not derived from audio.
+- **Tracks live in the same list as mixes.** A produced track is a row with
+  `kind: 'track'` and, if it is a collaboration, `artist` (defaults to Hempi).
+  It goes through `add-mix.sh` like a mix; peaks accept 16- and 24-bit WAVs.
 - Adding a mix: `cd apps/web && ./scripts/add-mix.sh <slug> <master.wav> <cover.png>`,
   then paste the printed row into `lib/mixes.ts`.
 
